@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SearchApi {
+public class SearchAPI {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SearchApi.class, args);
+		SpringApplication.run(SearchAPI.class, args);
 	}
 
 }
