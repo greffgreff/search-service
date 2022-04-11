@@ -9,10 +9,9 @@ public class Summary {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String query;
     @JsonProperty
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private final int totalResults;
     @JsonProperty
-    private final int numResults;
+    private final int count;
     @JsonProperty
     private final int offset;
     @JsonProperty
@@ -39,7 +38,7 @@ public class Summary {
     private Summary(Builder builder) {
         this.query = builder.query;
         this.totalResults = builder.totalResults;
-        this.numResults = builder.numResults;
+        this.count = builder.numResults;
         this.offset = builder.offset;
         this.lat = builder.lat;
         this.lon = builder.lon;

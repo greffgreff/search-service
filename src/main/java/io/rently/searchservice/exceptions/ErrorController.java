@@ -14,6 +14,15 @@ import javax.servlet.http.HttpServletResponse;
 @ControllerAdvice
 public class ErrorController {
 
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public ResponseContent handleGenericException(HttpServletResponse response, Exception exception) {
+        Broadcaster.error(exception);
+        ResponseStatusException resEx = Errors.INTERNAL_SERVER_ERROR;
+        response.setStatus(resEx.getStatus().value());
+        return new ResponseContent.Builder(resEx.getStatus()).setMessage(resEx.getReason()).build();
+    }
+
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseBody
     public static ResponseContent handleInvalidURI(HttpServletResponse response, MissingServletRequestParameterException ex) {
@@ -32,5 +41,4 @@ public class ErrorController {
         response.setStatus(ex.getStatus().value());
         return new ResponseContent.Builder(ex.getStatus()).setMessage(ex.getReason()).build();
     }
-
 }

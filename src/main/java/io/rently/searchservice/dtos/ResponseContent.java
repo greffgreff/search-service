@@ -24,7 +24,7 @@ public class ResponseContent {
     private final Summary summary;
     @JsonProperty(value = "results")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final Object[] data;
+    private final Object data;
 
     private ResponseContent(Builder builder) {
         this.timestamp = builder.timestamp;
@@ -53,7 +53,7 @@ public class ResponseContent {
         private final int status;
         private String message;
         private Summary summary;
-        private Object[] data;
+        private Object data;
 
         public Builder(Timestamp timestamp, int status) {
             this.timestamp = timestamp;
@@ -68,7 +68,7 @@ public class ResponseContent {
             this(new Timestamp(System.currentTimeMillis()), HttpStatus.OK.value());
         }
 
-        public Builder setData(Object[] data) {
+        public Builder setData(Object data) {
             this.data = data;
             return this;
         }

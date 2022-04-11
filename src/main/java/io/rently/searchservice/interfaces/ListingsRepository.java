@@ -9,6 +9,6 @@ import java.util.Optional;
 
 public interface ListingsRepository extends MongoRepository<Listing, String> {
 
-    @Query("{'id' : ?0}")
-    Optional<Listing> findById(@Param("id") String id);
+    @Query("{ 'id' : ?0 }")
+    Optional<Listing> findById(String id);
 }
