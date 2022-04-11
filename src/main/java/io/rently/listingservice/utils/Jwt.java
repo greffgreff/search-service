@@ -8,7 +8,6 @@ import io.jsonwebtoken.impl.crypto.DefaultJwtSignatureValidator;
 import io.rently.listingservice.exceptions.Errors;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.util.Date;
 
 public class Jwt {
     private static final String SECRET = "HelloDarknessMyOldFriend"; // move to .env file

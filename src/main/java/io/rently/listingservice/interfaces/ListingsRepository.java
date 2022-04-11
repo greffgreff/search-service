@@ -3,7 +3,6 @@ package io.rently.listingservice.interfaces;
 import io.rently.listingservice.models.Listing;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
