@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.Arrays;
+
 @JsonDeserialize(builder = Address.Builder.class)
 public class Address {
     private String street;
@@ -11,8 +13,7 @@ public class Address {
     private String zip;
     private String country;
     private String formattedAddress;
-    private float lat;
-    private float lon;
+    private Geo location;
 
     protected Address() { }
 
@@ -22,8 +23,7 @@ public class Address {
         this.zip = builder.zip;
         this.country = builder.country;
         this.formattedAddress = builder.formattedAddress;
-        this.lat = builder.lat;
-        this.lon = builder.lon;
+        this.location = builder.location;
     }
 
     public String getStreet() {
@@ -46,12 +46,8 @@ public class Address {
         return formattedAddress;
     }
 
-    public float getLat() {
-        return lat;
-    }
-
-    public float getLon() {
-        return lon;
+    public Geo getLocation() {
+        return location;
     }
 
     @Override
@@ -62,8 +58,7 @@ public class Address {
                 ", zip='" + zip + '\'' +
                 ", country='" + country + '\'' +
                 ", formattedAddress='" + formattedAddress + '\'' +
-                ", lat=" + lat +
-                ", lon=" + lon +
+                ", location=" + location +
                 '}';
     }
 
@@ -79,17 +74,14 @@ public class Address {
         @JsonProperty
         private final String formattedAddress;
         @JsonProperty
-        private final float lat;
-        @JsonProperty
-        private final float lon;
+        private final Geo location;
 
-        public Builder(String city, String zip, String country, String formattedAddress, float lat, float lon) {
+        public Builder(String city, String zip, String country, String formattedAddress, Geo location) {
             this.city = city;
             this.zip = zip;
             this.country = country;
             this.formattedAddress = formattedAddress;
-            this.lat = lat;
-            this.lon = lon;
+            this.location = location;
         }
 
         public Builder setStreet(String street) {
