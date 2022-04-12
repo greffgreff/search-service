@@ -3,6 +3,7 @@ package io.rently.listingservice.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 
 @JsonDeserialize(builder = Address.Builder.class)
 public class Address {
@@ -11,6 +12,7 @@ public class Address {
     private String zip;
     private String country;
     private String formattedAddress;
+    @GeoSpatialIndexed
     private Geo location;
 
     protected Address() { }
