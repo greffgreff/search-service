@@ -50,8 +50,9 @@ public class ExceptionController {
 
     @ResponseBody
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public static ResponseContent handleInvalidFormatException(HttpServletResponse response) {
-        ResponseStatusException respEx = Errors.NO_DATA;
+    public static ResponseContent handleInvalidFormatException(HttpServletResponse response, Exception ex) {
+        Broadcaster.error(ex);
+        ResponseStatusException respEx = Errors.ERROR_PARSING;
         response.setStatus(respEx.getStatus().value());
         return new ResponseContent.Builder(respEx.getStatus()).setMessage(respEx.getReason()).build();
     }
