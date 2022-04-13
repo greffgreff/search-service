@@ -1,5 +1,6 @@
 package io.rently.searchservice.apis;
 
+import io.rently.searchservice.utils.Broadcaster;
 import org.json.JSONObject;
 import org.springframework.data.util.Pair;
 
@@ -15,12 +16,13 @@ public class TomTom {
     private TomTom() { }
 
     public static Pair<Double, Double> getGeoFromAddress(String ...address) throws Exception {
-        URL url = new URL(BASE_URL + String.join("%20", address) + ".json?storeResult=false&view=Unified&key=" + TOMTOM_KEY);
+        String requestUrl = BASE_URL + String.join("%20", address) + ".json?storeResult=false&view=Unified&key=" + TOMTOM_KEY;
+        URL url = new URL(requestUrl);
         URLConnection urlConnection = url.openConnection();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
         JSONObject response = new JSONObject(bufferedReader.readLine());
-        Object firstResult = response.getJSONArray("results").get(0);
-        JSONObject position = new JSONObject(firstResult).getJSONObject("position");
+        JSONObject firstResult = (JSONObject) response.getJSONArray("results").get(0);
+        JSONObject position = firstResult.getJSONObject("position");
         return Pair.of(position.getDouble("lon"), position.getDouble("lat"));
     }
 }

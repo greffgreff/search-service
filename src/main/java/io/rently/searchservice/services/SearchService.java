@@ -2,6 +2,7 @@ package io.rently.searchservice.services;
 
 import io.rently.searchservice.apis.TomTom;
 import io.rently.searchservice.dtos.Listing;
+import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.interfaces.ListingsRepository;
 import io.rently.searchservice.utils.Broadcaster;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,10 +50,9 @@ public class SearchService {
         try {
             geoCords =  TomTom.getGeoFromAddress(country, city, zip);
         } catch (Exception ex) {
-            Broadcaster.error(ex);
+            throw new Errors.HttpAddressNotFound(country, city, zip);
         }
 
-        assert geoCords != null;
         return repository.findNearByGeoCode(geoCords.getFirst(), geoCords.getSecond(), range);
     }
 
