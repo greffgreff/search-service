@@ -5,23 +5,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.rently.searchservice.dtos.enums.QueryType;
 
 public class Summary {
-    @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String query;
     @JsonProperty
     private final int totalResults;
     @JsonProperty
     private final int count;
-    @JsonProperty
+    @JsonProperty("page")
     private final int offset;
     @JsonProperty
     private final QueryType queryType;
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    private final float lat;
+    private final double lat;
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    private final float lon;
+    private final double lon;
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private final int range;
@@ -54,8 +53,8 @@ public class Summary {
         private int totalResults;
         private int numResults;
         private int offset;
-        private float lat;
-        private float lon;
+        private double lat;
+        private double lon;
         private int range;
         private final QueryType queryType;
         private String country;
@@ -86,12 +85,12 @@ public class Summary {
             return this;
         }
 
-        public Builder setLat(float lat) {
+        public Builder setLat(double lat) {
             this.lat = lat;
             return this;
         }
 
-        public Builder setLon(float lon) {
+        public Builder setLon(double lon) {
             this.lon = lon;
             return this;
         }

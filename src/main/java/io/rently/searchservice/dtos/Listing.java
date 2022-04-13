@@ -20,9 +20,8 @@ public class Listing {
     private String startDate;
     private String endDate;
     private String createdAt;
-    @JsonIgnore
     private String updatedAt;
-    @JsonIgnore
+//    @JsonIgnore
     private Address address;
     @JsonIgnore
     private String leaser;

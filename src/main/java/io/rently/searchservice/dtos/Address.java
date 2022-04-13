@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 
 @JsonDeserialize(builder = Address.Builder.class)
 public class Address {
@@ -15,9 +17,7 @@ public class Address {
     @JsonIgnore
     private String formattedAddress;
     @JsonIgnore
-    private float lat;
-    @JsonIgnore
-    private float lon;
+    private GeoJsonPoint location;
 
     protected Address() { }
 
@@ -27,12 +27,7 @@ public class Address {
         this.zip = builder.zip;
         this.country = builder.country;
         this.formattedAddress = builder.formattedAddress;
-        this.lat = builder.lat;
-        this.lon = builder.lon;
-    }
-
-    public String getStreet() {
-        return street;
+        this.location = builder.location;
     }
 
     public String getCity() {
@@ -47,16 +42,16 @@ public class Address {
         return country;
     }
 
+    public String getStreet() {
+        return street;
+    }
+
     public String getFormattedAddress() {
         return formattedAddress;
     }
 
-    public float getLat() {
-        return lat;
-    }
-
-    public float getLon() {
-        return lon;
+    public GeoJsonPoint getLocation() {
+        return location;
     }
 
     @Override
@@ -67,8 +62,7 @@ public class Address {
                 ", zip='" + zip + '\'' +
                 ", country='" + country + '\'' +
                 ", formattedAddress='" + formattedAddress + '\'' +
-                ", lat=" + lat +
-                ", lon=" + lon +
+                ", location=" + location +
                 '}';
     }
 
@@ -84,17 +78,14 @@ public class Address {
         @JsonProperty
         private final String formattedAddress;
         @JsonProperty
-        private final float lat;
-        @JsonProperty
-        private final float lon;
+        private final GeoJsonPoint location;
 
-        public Builder(String city, String zip, String country, String formattedAddress, float lat, float lon) {
+        public Builder(String city, String zip, String country, String formattedAddress, GeoJsonPoint location) {
             this.city = city;
             this.zip = zip;
             this.country = country;
             this.formattedAddress = formattedAddress;
-            this.lat = lat;
-            this.lon = lon;
+            this.location = location;
         }
 
         public Builder setStreet(String street) {
