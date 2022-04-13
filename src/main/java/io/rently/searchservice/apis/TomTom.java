@@ -17,12 +17,15 @@ public class TomTom {
 
     public static Pair<Double, Double> getGeoFromAddress(String ...address) throws Exception {
         String requestUrl = BASE_URL + String.join("%20", address) + ".json?storeResult=false&view=Unified&key=" + TOMTOM_KEY;
+        Broadcaster.debug(requestUrl);
         URL url = new URL(requestUrl);
         URLConnection urlConnection = url.openConnection();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
         JSONObject response = new JSONObject(bufferedReader.readLine());
         JSONObject firstResult = (JSONObject) response.getJSONArray("results").get(0);
         JSONObject position = firstResult.getJSONObject("position");
-        return Pair.of(position.getDouble("lon"), position.getDouble("lat"));
+        Pair<Double, Double> geo = Pair.of(position.getDouble("lon"), position.getDouble("lat"));
+        Broadcaster.debug("Score = " + firstResult.getDouble("score") + ", lat = " + geo.getSecond() + ", lon = " + geo.getFirst());
+        return geo;
     }
 }

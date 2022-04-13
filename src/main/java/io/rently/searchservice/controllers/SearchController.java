@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/")
 public class SearchController {
 
     @Autowired
     public SearchService service;
 
-    @GetMapping("/")
-    public ResponseContent handleGetRequest(
+    @GetMapping("/listings")
+    public ResponseContent handleRandomQueries(
             @RequestParam(required = false) Integer count,
             @RequestParam(required = false) Integer offset
     ) {
@@ -41,8 +41,8 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping("/{query}")
-    public ResponseContent handleGetRequest(
+    @GetMapping("/listings/{query}")
+    public ResponseContent handleQueries(
             @PathVariable String query,
             @RequestParam(required = false) Integer count,
             @RequestParam(required = false) Integer offset
@@ -66,9 +66,9 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping("/geocode/{query}")
-    public ResponseContent handleGetRequest(
-            @PathVariable String query,
+    @GetMapping("/listings/geocode/{query}")
+    public ResponseContent handleNearbyQueriesByGeocode(
+            @PathVariable(required = false) String query,
             @RequestParam Double lat,
             @RequestParam Double lon,
             @RequestParam Integer range,
@@ -97,9 +97,9 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping("/location/{query}")
-    public ResponseContent handleGetRequest(
-            @PathVariable String query,
+    @GetMapping("/listings/location/{query}")
+    public ResponseContent handleNearbyQueriesByAddress(
+            @PathVariable(required = false) String query,
             @RequestParam String country,
             @RequestParam String city,
             @RequestParam String zip,
@@ -110,7 +110,7 @@ public class SearchController {
         count = handleCount(count);
         offset = handleOffset(offset);
 
-        List<Listing> listings = service.fetchByQueryAndLocation(query, country, city, zip, range, count, offset);
+        List<Listing> listings = service.fetchByQueryAndAddress(query, country, city, zip, range, count, offset);
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED_NEARBY)

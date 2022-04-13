@@ -33,27 +33,20 @@ public class SearchService {
         // FIXME add fetch by query
     }
 
-    public List<Listing> fetchByQueryAndLocation(String query, String country, String city, String zip, Integer range, Integer count, Integer page) {
+    public List<Listing> fetchByQueryAndAddress(String query, String country, String city, String zip, Integer range, Integer count, Integer page) {
         Broadcaster.info("Fetching listings by query and location. Pagination: count = " + count + ", page = " + page);
         Broadcaster.info("Parameters: country = " + country + ", city = " + city + ", zip = " + zip);
 
         if (zip != null && country == null) {
             throw new IllegalArgumentException("oi no zip or country bitch");
-        } else if (query == null) {
-            throw new IllegalArgumentException("oi not query");
         } else if (range == null) {
             throw new IllegalArgumentException("not range");
         }
 
-        //{"address": {"location": {$near: {$maxDistance: 1000000, $geometry: {type: "Point", coordinates: [7.091800212860107, 49.08848190307617]}}}}}
-        Pair<Double, Double> geoCords = null;
-        try {
-            geoCords =  TomTom.getGeoFromAddress(country, city, zip);
-        } catch (Exception ex) {
-            throw new Errors.HttpAddressNotFound(country, city, zip);
-        }
+        Pair<Double, Double> geoCords = getGeoCords(country, city, zip);
+        Pageable pageable = PageRequest.of(page, count);
 
-        return repository.findNearByGeoCode(geoCords.getFirst(), geoCords.getSecond(), range);
+        return repository.findNearByGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pageable);
     }
 
     public List<Listing> fetchByQueryAndGeocode(String query, Double lat, Double lon, Integer range, Integer count, Integer page) {
@@ -64,12 +57,18 @@ public class SearchService {
             throw new IllegalArgumentException("lon not in range");
         } else if (range == null) {
             throw new IllegalArgumentException("no range");
-        } else if (query == null) {
-            throw new IllegalArgumentException("no query");
         }
 
-        Pageable pageable = PageRequest.of(page, count); // FIXME add pagination to queries
+        Pageable pageable = PageRequest.of(page, count);
 
-        return repository.findNearByGeoCode(lon, lat, range);
+        return repository.findNearByGeoCode(lon, lat, range, pageable);
+    }
+
+    private static Pair<Double, Double> getGeoCords(String ...address) {
+        try {
+            return TomTom.getGeoFromAddress(address);
+        } catch (Exception ex) {
+            throw new Errors.HttpAddressNotFound(address);
+        }
     }
 }
