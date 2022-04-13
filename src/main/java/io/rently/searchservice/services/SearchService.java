@@ -19,55 +19,52 @@ public class SearchService {
     @Autowired
     public ListingsRepository repository;
 
-    public List<Listing> fetchAny(Integer count, Integer page) {
+    public List<Listing> queryAny(Integer count, Integer page) {
         Broadcaster.info("Fetching listings randomly. Pagination: count = " + count + ", page = " + page);
         Pageable pageable = PageRequest.of(page, count);
         return repository.findAll(pageable).getContent();
     }
 
-    public void fetchByQuery(String query, Integer count, Integer page) {
+    public void query(String query, Integer count, Integer page) {
         Broadcaster.info("Fetching listings by query. Pagination: count = " + count + ", page = " + page);
-        if (query == null) {
-            throw new Errors.HttpMissingPathVar("query");
-        }
+        Broadcaster.info("Parameters: query = " + query);
+        Pageable pageable = PageRequest.of(page, count);
+        //{ $or: [ <query>, {"desc" : {$regex : "bqq"}}, {'address.formattedAddress': "bbq"} ] }
+        //{ $text: { $search: "" } }
+        //{ $and [ { $text: { $search: "" } }, { $or: [ {'address.country': ?0}, {'address.city': ?1}, {'address.zip': ?2} ] } ]}
         // FIXME add fetch by query
     }
 
-    public List<Listing> fetchByQueryAndAddress(String query, String country, String city, String zip, Integer range, Integer count, Integer page) {
+    public List<Listing> queryByAddress(String query, String country, String city, String zip, Integer count, Integer page) {
         Broadcaster.info("Fetching listings by query and location. Pagination: count = " + count + ", page = " + page);
-        Broadcaster.info("Parameters: country = " + country + ", city = " + city + ", zip = " + zip);
+        Broadcaster.info("Parameters: query = " + query + ", country = " + country + ", city = " + city + ", zip = " + zip);
         Pageable pageable = PageRequest.of(page, count);
-        if (country == null && city == null && zip == null && range == null) {
-            throw Errors.NO_PARAMS;
+        if (zip != null && country == null && city == null) {
+            throw new IllegalArgumentException("Cannot specify `zip` parameter without either `country` or `city` parameters");
         }
-        if (range != null) {
-            // RANGE_SPECIFIC
-            Pair<Double, Double> geoCords;
-            try {
-                geoCords = TomTom.getGeoFromAddress(country, city, zip);
-            } catch (Exception ex) {
-                throw Errors.NO_ADDRESS_FOUND;
-            }
+        return repository.findByAddress(query, country, city, zip, pageable);
+    }
+
+    public List<Listing> queryNearbyByAddress(String query, String country, String city, String zip, Integer range, Integer count, Integer page) {
+        Broadcaster.info("Fetching listings by query and location. Pagination: count = " + count + ", page = " + page);
+        Broadcaster.info("Parameters: query = " + query + ", country = " + country + ", city = " + city + ", zip = " + zip);
+        Pageable pageable = PageRequest.of(page, count);
+        try {
+            Pair<Double, Double> geoCords = TomTom.getGeoFromAddress(country, city, zip);
             return repository.findNearByGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pageable);
-        } else {
-            // NON_RANGE_SPECIFIC
-            if (zip != null && country == null) {
-                throw new IllegalArgumentException("Cannot specify `zip` parameter without `country` parameter");
-            }
-            return repository.findByAddress(country, city, zip, pageable);
+        } catch (Exception ex) {
+            throw Errors.NO_ADDRESS_FOUND;
         }
     }
 
-    public List<Listing> fetchByQueryAndGeocode(String query, Double lat, Double lon, Integer range, Integer count, Integer page) {
+    public List<Listing> queryNearbyByGeocode(String query, Double lat, Double lon, Integer range, Integer count, Integer page) {
         Broadcaster.info("Fetching listings by query and geocode. Pagination: count = " + count + ", page = " + page);
+        Broadcaster.info("Parameters: lat = " + lat + ", lon = " + lon);
         if (lat > 90 || lat < -90) {
             throw Errors.INVALID_LAT;
         } else if (lon > 180 || lon < -180) {
             throw Errors.INVALID_LON;
-        } else if (range == null) {
-            throw new Errors.HttpMissingQueryParam("range", Integer.class);
         }
-
         Pageable pageable = PageRequest.of(page, count);
         return repository.findNearByGeoCode(lon, lat, range, pageable);
     }

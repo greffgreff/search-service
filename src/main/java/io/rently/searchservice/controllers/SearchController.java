@@ -4,6 +4,7 @@ import io.rently.searchservice.dtos.Listing;
 import io.rently.searchservice.dtos.ResponseContent;
 import io.rently.searchservice.dtos.Summary;
 import io.rently.searchservice.dtos.enums.QueryType;
+import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.services.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class SearchController {
         count = handleCount(count);
         offset = handleOffset(offset);
 
-        List<Listing> listings = service.fetchAny(count, offset);
+        List<Listing> listings = service.queryAny(count, offset);
 
         Summary summary = new Summary
                 .Builder(QueryType.RANDOM)
@@ -50,7 +51,7 @@ public class SearchController {
         count = handleCount(count);
         offset = handleOffset(offset);
 
-        service.fetchByQuery(query, count, offset);
+        service.query(query, count, offset);
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED)
@@ -66,7 +67,7 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping("/listings/geocode/{query}")
+    @GetMapping("/listings/nearby/geo/{query}")
     public ResponseContent handleNearbyQueriesByGeocode(
             @PathVariable(required = false) String query,
             @RequestParam Double lat,
@@ -78,7 +79,7 @@ public class SearchController {
         count = handleCount(count);
         offset = handleOffset(offset);
 
-        List<Listing> listings = service.fetchByQueryAndGeocode(query, lat, lon, range, count, offset);
+        List<Listing> listings = service.queryNearbyByGeocode(query, lat, lon, range, count, offset);
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED_NEARBY)
@@ -97,20 +98,58 @@ public class SearchController {
                 .build();
     }
 
+    @GetMapping("/listings/nearby/location/{query}")
+    public ResponseContent handleNearbyQueriesByAddress(
+            @PathVariable(required = false) String query,
+            @RequestParam(required = false) String country,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String zip,
+            @RequestParam Integer range,
+            @RequestParam(required = false) Integer count,
+            @RequestParam(required = false) Integer offset
+    ) {
+        count = handleCount(count);
+        offset = handleOffset(offset);
+        if (country == null && city == null && zip == null && range == null) {
+            throw Errors.NO_PARAMS;
+        }
+
+        List<Listing> listings = service.queryNearbyByAddress(query, country, city, zip, range, count, offset);
+
+        Summary summary = new Summary
+                .Builder(QueryType.QUERIED_NEARBY)
+                .setQuery(query)
+                .setNumResults(count)
+                .setOffset(offset)
+                .setTotalResults(99999)
+                .setCountry(country)
+                .setCity(city)
+                .setZip(zip)
+                .build();
+
+        return new ResponseContent
+                .Builder()
+                .setSummary(summary)
+                .setData(listings)
+                .build();
+    }
+
     @GetMapping("/listings/location/{query}")
     public ResponseContent handleQueriesByAddress(
             @PathVariable(required = false) String query,
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String zip,
-            @RequestParam(required = false) Integer range,
             @RequestParam(required = false) Integer count,
             @RequestParam(required = false) Integer offset
     ) {
         count = handleCount(count);
         offset = handleOffset(offset);
+        if (country == null && city == null && zip == null) {
+            throw Errors.NO_PARAMS;
+        }
 
-        List<Listing> listings = service.fetchByQueryAndAddress(query, country, city, zip, range, count, offset);
+        List<Listing> listings = service.queryByAddress(query, country, city, zip, count, offset); // FIXME
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED_NEARBY)
