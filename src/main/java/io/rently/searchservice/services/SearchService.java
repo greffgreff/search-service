@@ -25,14 +25,11 @@ public class SearchService {
         return repository.findAll(pageable).getContent();
     }
 
-    public void query(String query, Integer count, Integer page) {
+    public List<Listing> query(String query, Integer count, Integer page) {
         Broadcaster.info("Fetching listings by query. Pagination: count = " + count + ", page = " + page);
         Broadcaster.info("Parameters: query = " + query);
         Pageable pageable = PageRequest.of(page, count);
-        //{ $or: [ <query>, {"desc" : {$regex : "bqq"}}, {'address.formattedAddress': "bbq"} ] }
-        //{ $text: { $search: "" } }
-        //{ $and [ { $text: { $search: "" } }, { $or: [ {'address.country': ?0}, {'address.city': ?1}, {'address.zip': ?2} ] } ]}
-        // FIXME add fetch by query
+        return repository.queryAny(query, pageable);
     }
 
     public List<Listing> queryByAddress(String query, String country, String city, String zip, Integer count, Integer page) {
@@ -42,7 +39,7 @@ public class SearchService {
         if (zip != null && country == null && city == null) {
             throw new IllegalArgumentException("Cannot specify `zip` parameter without either `country` or `city` parameters");
         }
-        return repository.findByAddress(query, country, city, zip, pageable);
+        return repository.queryAtAddress(query, country, city, zip, pageable);
     }
 
     public List<Listing> queryNearbyByAddress(String query, String country, String city, String zip, Integer range, Integer count, Integer page) {
@@ -51,7 +48,7 @@ public class SearchService {
         Pageable pageable = PageRequest.of(page, count);
         try {
             Pair<Double, Double> geoCords = TomTom.getGeoFromAddress(country, city, zip);
-            return repository.findNearByGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pageable);
+            return repository.queryAnyNearbyGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pageable);
         } catch (Exception ex) {
             throw Errors.NO_ADDRESS_FOUND;
         }
@@ -66,6 +63,6 @@ public class SearchService {
             throw Errors.INVALID_LON;
         }
         Pageable pageable = PageRequest.of(page, count);
-        return repository.findNearByGeoCode(lon, lat, range, pageable);
+        return repository.queryNearbyGeoCode(query, lon, lat, range, pageable);
     }
 }
