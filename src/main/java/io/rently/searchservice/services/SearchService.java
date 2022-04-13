@@ -28,7 +28,7 @@ public class SearchService {
     public void fetchByQuery(String query, Integer count, Integer page) {
         Broadcaster.info("Fetching listings by query. Pagination: count = " + count + ", page = " + page);
         if (query == null) {
-            throw new IllegalArgumentException("oi not query");
+            throw new Errors.HttpMissingPathVar("query");
         }
         // FIXME add fetch by query
     }
@@ -36,39 +36,39 @@ public class SearchService {
     public List<Listing> fetchByQueryAndAddress(String query, String country, String city, String zip, Integer range, Integer count, Integer page) {
         Broadcaster.info("Fetching listings by query and location. Pagination: count = " + count + ", page = " + page);
         Broadcaster.info("Parameters: country = " + country + ", city = " + city + ", zip = " + zip);
-
-        if (zip != null && country == null) {
-            throw new IllegalArgumentException("oi no zip or country bitch");
-        } else if (range == null) {
-            throw new IllegalArgumentException("not range");
-        }
-
-        Pair<Double, Double> geoCords = getGeoCords(country, city, zip);
         Pageable pageable = PageRequest.of(page, count);
-
-        return repository.findNearByGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pageable);
+        if (country == null && city == null && zip == null && range == null) {
+            throw Errors.NO_PARAMS;
+        }
+        if (range != null) {
+            // RANGE_SPECIFIC
+            Pair<Double, Double> geoCords;
+            try {
+                geoCords = TomTom.getGeoFromAddress(country, city, zip);
+            } catch (Exception ex) {
+                throw Errors.NO_ADDRESS_FOUND;
+            }
+            return repository.findNearByGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pageable);
+        } else {
+            // NON_RANGE_SPECIFIC
+            if (zip != null && country == null) {
+                throw new IllegalArgumentException("Cannot specify `zip` parameter without `country` parameter");
+            }
+            return repository.findByAddress(country, city, zip, pageable);
+        }
     }
 
     public List<Listing> fetchByQueryAndGeocode(String query, Double lat, Double lon, Integer range, Integer count, Integer page) {
         Broadcaster.info("Fetching listings by query and geocode. Pagination: count = " + count + ", page = " + page);
         if (lat > 90 || lat < -90) {
-            throw new IllegalArgumentException("lat not in range");
+            throw Errors.INVALID_LAT;
         } else if (lon > 180 || lon < -180) {
-            throw new IllegalArgumentException("lon not in range");
+            throw Errors.INVALID_LON;
         } else if (range == null) {
-            throw new IllegalArgumentException("no range");
+            throw new Errors.HttpMissingQueryParam("range", Integer.class);
         }
 
         Pageable pageable = PageRequest.of(page, count);
-
         return repository.findNearByGeoCode(lon, lat, range, pageable);
-    }
-
-    private static Pair<Double, Double> getGeoCords(String ...address) {
-        try {
-            return TomTom.getGeoFromAddress(address);
-        } catch (Exception ex) {
-            throw new Errors.HttpAddressNotFound(address);
-        }
     }
 }

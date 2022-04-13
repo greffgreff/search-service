@@ -11,4 +11,7 @@ public interface ListingsRepository extends MongoRepository<Listing, String> {
 
     @Query("{'address.location': {$near: {$maxDistance: ?2, $geometry: {type: 'Point', coordinates: [?0, ?1]}}}}")
     List<Listing> findNearByGeoCode(Double lon, Double lat, Integer range, Pageable pageable);
+
+    @Query("{ or: [ {'address.country': ?0}, {'address.city': ?1}, {'address.zip': ?2} ] }")
+    List<Listing> findByAddress(String country, String city, String zip, Pageable pageable);
 }

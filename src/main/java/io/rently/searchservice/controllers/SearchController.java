@@ -98,12 +98,12 @@ public class SearchController {
     }
 
     @GetMapping("/listings/location/{query}")
-    public ResponseContent handleNearbyQueriesByAddress(
+    public ResponseContent handleQueriesByAddress(
             @PathVariable(required = false) String query,
-            @RequestParam String country,
-            @RequestParam String city,
-            @RequestParam String zip,
-            @RequestParam Integer range,
+            @RequestParam(required = false) String country,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String zip,
+            @RequestParam(required = false) Integer range,
             @RequestParam(required = false) Integer count,
             @RequestParam(required = false) Integer offset
     ) {
