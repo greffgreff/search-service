@@ -18,15 +18,16 @@ import java.util.Map;
 import static java.util.stream.Collectors.joining;
 
 @RestController
-@RequestMapping("/api/v1/search")
+@RequestMapping("/api/v1/listings")
 public class SearchController {
 
-    //      /api/v1/search/random
-    //      /api/v1/search/aggregatedQuery/{query} <- redirecting to other endpoints only
-    //      /api/v1/search/listings/{query}
-    //      /api/v1/search/listings/address/{query}
-    //      /api/v1/search/listings/nearby/address/{query}
-    //      /api/v1/search/listings/nearby/geo/{query}
+    //      /api/v1/listings/random
+    //      /api/v1/listings/id/{id} FIXME add missing endpoint and remove get from listing endpoint
+    //      /api/v1/listings/search/aggregatedQuery/{query} <- redirecting to other endpoints only
+    //      /api/v1/listings/search/{query}
+    //      /api/v1/listings/search/address/{query}
+    //      /api/v1/listings/search/nearby/address/{query}
+    //      /api/v1/listings/search/nearby/geo/{query}
 
     @Autowired
     public SearchService service;
@@ -39,11 +40,11 @@ public class SearchController {
         if ((parameters.containsKey("count") && parameters.containsKey("offset") && parameters.size() == 2) || parameters.isEmpty()) {
             return new RedirectView("/api/v1/search/listings/" + parsedQuery + parsedParams);
         } else if (parameters.containsKey("lat") && parameters.containsKey("lon")) {
-            return new RedirectView("/api/v1/search/listings/nearby/geo/" + parsedQuery + parsedParams);
+            return new RedirectView("/api/v1/listings/search/nearby/geo/" + parsedQuery + parsedParams);
         } else if (parameters.containsKey("country") || parameters.containsKey("city") || parameters.containsKey("zip")) {
-            return new RedirectView("/api/v1/search/listings/address/" + parsedQuery + parsedParams);
+            return new RedirectView("/api/v1/listings/search/address/" + parsedQuery + parsedParams);
         } else if (parameters.containsKey("address")) {
-            return new RedirectView("/api/v1/search/listings/nearby/address/" + parsedQuery + parsedParams);
+            return new RedirectView("/api/v1/listings/search/nearby/address/" + parsedQuery + parsedParams);
         }
         throw Errors.INVALID_REQUEST_PARAMS;
     }
@@ -66,7 +67,7 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping({"/listings/{query}" , "/listings"})
+    @GetMapping({"/search/{query}" , "/search"})
     public ResponseContent fetchListingByQuery(
             @PathVariable(required = false) String query,
             @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
@@ -88,7 +89,7 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping({"/listings/address/{query}", "/listings/address"})
+    @GetMapping({"/search/address/{query}", "/search/address"})
     public ResponseContent fetchListingsByQueryAtAddress(
             @PathVariable(required = false) String query,
             @RequestParam(required = false) String country,
@@ -116,7 +117,7 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping({"/listings/nearby/geo/{query}", "/listings/nearby/geo"})
+    @GetMapping({"/search/nearby/geo/{query}", "/search/nearby/geo"})
     public ResponseContent fetchListingsByQueryNearbyGeo(
             @PathVariable(required = false) String query,
             @RequestParam Double lat,
@@ -144,7 +145,7 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping({"/listings/nearby/address/{query}", "/listings/nearby/address"})
+    @GetMapping({"/search/nearby/address/{query}", "/search/nearby/address"})
     public ResponseContent fetchListingsByQueryNearbyAddress(
             @PathVariable(required = false) String query,
             @RequestParam String address,

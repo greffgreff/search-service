@@ -9,6 +9,7 @@ public class Errors {
     public static final ResponseStatusException INVALID_REQUEST_PARAMS = new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid combination of query parameters. Could not make sense of request");
     public static final ResponseStatusException NO_ADDRESS_FOUND = new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find address with given parameters");
     public static final ResponseStatusException NO_ADDRESS_PARAMS = new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either `city` or `country` needs to be specified in request parameters");;
+    public static final ResponseStatusException NO_IMAGE = new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found");;
 
     public static class HttpMissingQueryParam extends ResponseStatusException {
         public HttpMissingQueryParam(String queryParamName, Class<?> queryParamType) {

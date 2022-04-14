@@ -8,6 +8,7 @@ public class Summary {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String query;
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private final int totalResults;
     @JsonProperty
     private final int count;
