@@ -2,6 +2,8 @@ package io.rently.searchservice.controllers;
 
 import io.rently.searchservice.dtos.Listing;
 import io.rently.searchservice.dtos.ResponseContent;
+import io.rently.searchservice.dtos.Summary;
+import io.rently.searchservice.dtos.enums.QueryType;
 import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.services.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +21,7 @@ import static java.util.stream.Collectors.joining;
 @RequestMapping("/api/v1/search")
 public class SearchController {
 
+    //      /api/v1/search/random
     //      /api/v1/search/aggregatedQuery/{query} <- redirecting to other endpoints only
     //      /api/v1/search/listings/{query}
     //      /api/v1/search/listings/address/{query}
@@ -44,14 +48,44 @@ public class SearchController {
         throw Errors.INVALID_REQUEST_PARAMS;
     }
 
+    @GetMapping("/random")
+    public ResponseContent fetchListingByQuery(
+            @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count
+    ) {
+        List<Listing> listings = service.queryRandomly(count);
+
+        Summary summary = new Summary
+                .Builder(QueryType.RANDOM)
+                .setCount(count)
+                .build();
+
+        return new ResponseContent
+                .Builder()
+                .setSummary(summary)
+                .setData(listings)
+                .build();
+    }
+
     @GetMapping({"/listings/{query}" , "/listings"})
     public ResponseContent fetchListingByQuery(
             @PathVariable(required = false) String query,
             @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
     ) {
-        List<Listing> listings = service.queryListings(query, count, offset); // FIXME add summary
-        return new ResponseContent.Builder().setData(listings).build();
+        List<Listing> listings = service.queryListings(query, count, offset);
+
+        Summary summary = new Summary
+                .Builder(QueryType.QUERIED)
+                .setCount(count)
+                .setOffset(offset)
+                .setQuery(query)
+                .build();
+
+        return new ResponseContent
+                .Builder()
+                .setSummary(summary)
+                .setData(listings)
+                .build();
     }
 
     @GetMapping({"/listings/address/{query}", "/listings/address"})
@@ -64,7 +98,22 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
     ) {
         List<Listing> listings = service.queryListingsAtAddress(query, country, city, zip, count, offset);
-        return new ResponseContent.Builder().setData(listings).build();
+
+        Summary summary = new Summary
+                .Builder(QueryType.QUERIED_AT_ADDRESS)
+                .setCount(count)
+                .setOffset(offset)
+                .setQuery(query)
+                .setCountry(country)
+                .setCity(city)
+                .setZip(zip)
+                .build();
+
+        return new ResponseContent
+                .Builder()
+                .setSummary(summary)
+                .setData(listings)
+                .build();
     }
 
     @GetMapping({"/listings/nearby/geo/{query}", "/listings/nearby/geo"})
@@ -72,23 +121,52 @@ public class SearchController {
             @PathVariable(required = false) String query,
             @RequestParam Double lat,
             @RequestParam Double lon,
-            @RequestParam Integer range,
+            @RequestParam @Positive Integer range,
             @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
     ) {
         List<Listing> listings = service.queryListingsNearbyGeo(query, lat, lon, range, count, offset);
-        return new ResponseContent.Builder().setData(listings).build();
+
+        Summary summary = new Summary
+                .Builder(QueryType.QUERIED_NEARBY_GEO)
+                .setCount(count)
+                .setOffset(offset)
+                .setQuery(query)
+                .setLat(lat)
+                .setLon(lon)
+                .setRange(range)
+                .build();
+
+        return new ResponseContent
+                .Builder()
+                .setSummary(summary)
+                .setData(listings)
+                .build();
     }
 
     @GetMapping({"/listings/nearby/address/{query}", "/listings/nearby/address"})
     public ResponseContent fetchListingsByQueryNearbyAddress(
             @PathVariable(required = false) String query,
             @RequestParam String address,
-            @RequestParam Integer range,
+            @RequestParam @Positive Integer range,
             @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
     ) {
         List<Listing> listings = service.queryListingsNearbyAddress(query, range, count, offset, address);
-        return new ResponseContent.Builder().setData(listings).build();
+
+        Summary summary = new Summary
+                .Builder(QueryType.QUERIED_NEARBY_ADDRESS)
+                .setCount(count)
+                .setOffset(offset)
+                .setQuery(query)
+                .setAddress(address)
+                .setRange(range)
+                .build();
+
+        return new ResponseContent
+                .Builder()
+                .setSummary(summary)
+                .setData(listings)
+                .build();
     }
 }

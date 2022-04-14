@@ -19,6 +19,11 @@ public class SearchService {
     @Autowired
     private ListingsRepository repository;
 
+    public List<Listing> queryRandomly(Integer count) {
+        Broadcaster.info("Fetching listings randomly. Pagination: count = " +  count);
+        return repository.queryAny(count);
+    }
+
     public List<Listing> queryListings(String query, Integer count, Integer offset) {
         Pageable pagination = PageRequest.of(offset, count);
         if (query != null) {
@@ -26,7 +31,7 @@ public class SearchService {
             Broadcaster.info("Parameters: query = " + query);
             return repository.query(query, pagination);
         }
-        Broadcaster.info("Fetching listings randomly. Pagination: count = " + pagination.getPageSize() + ", page = " + pagination.getPageNumber());
+        Broadcaster.info("Fetching listings in order. Pagination: count = " + pagination.getPageSize() + ", page = " + pagination.getPageNumber());
         return repository.findAll(pagination).getContent();
     }
 

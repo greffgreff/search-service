@@ -33,11 +33,14 @@ public class Summary {
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private final String zip;
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private final String address;
 
     private Summary(Builder builder) {
         this.query = builder.query;
         this.totalResults = builder.totalResults;
-        this.count = builder.numResults;
+        this.count = builder.count;
         this.offset = builder.offset;
         this.lat = builder.lat;
         this.lon = builder.lon;
@@ -46,12 +49,13 @@ public class Summary {
         this.country = builder.country;
         this.city = builder.city;
         this.zip = builder.zip;
+        this.address = builder.address;
     }
 
     public static class Builder {
         private String query;
         private int totalResults;
-        private int numResults;
+        private int count;
         private int offset;
         private double lat;
         private double lon;
@@ -60,9 +64,15 @@ public class Summary {
         private String country;
         private String city;
         private String zip;
+        private String address;
 
         public Builder(QueryType queryType) {
             this.queryType = queryType;
+        }
+
+        public Builder setAddress(String address) {
+            this.address = address;
+            return this;
         }
 
         public Builder setQuery(String query) {
@@ -75,8 +85,8 @@ public class Summary {
             return this;
         }
 
-        public Builder setNumResults(int numResults) {
-            this.numResults = numResults;
+        public Builder setCount(int count) {
+            this.count = count;
             return this;
         }
 
