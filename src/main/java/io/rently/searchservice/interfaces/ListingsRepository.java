@@ -10,7 +10,7 @@ import java.util.List;
 public interface ListingsRepository extends MongoRepository<Listing, String> {
 
     @Query("{ $text: { $search: ?0 } }")
-    List<Listing> queryAny(String query, Pageable pageable);
+    List<Listing> query(String query, Pageable pageable);
 
     @Query("{ 'address.location': { $near: {$maxDistance: ?2, $geometry: { type: 'Point', coordinates: [?0, ?1]} } } }")
     List<Listing> queryAnyNearbyGeoCode(Double lon, Double lat, Integer range, Pageable pageable);
