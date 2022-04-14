@@ -37,11 +37,9 @@ public class SearchController {
         } else if (parameters.containsKey("lat") && parameters.containsKey("lon")) {
             return new RedirectView("/api/v1/search/listings/nearby/geo/" + parsedQuery + parsedParams);
         } else if (parameters.containsKey("country") || parameters.containsKey("city") || parameters.containsKey("zip")) {
-            if (parameters.containsKey("range")) {
-                return new RedirectView("/api/v1/search/listings/nearby/address/" + parsedQuery + parsedParams);
-            } else {
-                return new RedirectView("/api/v1/search/listings/address/" + parsedQuery + parsedParams);
-            }
+            return new RedirectView("/api/v1/search/listings/address/" + parsedQuery + parsedParams);
+        } else if (parameters.containsKey("address")) {
+            return new RedirectView("/api/v1/search/listings/nearby/address/" + parsedQuery + parsedParams);
         }
         throw Errors.INVALID_REQUEST_PARAMS;
     }
@@ -52,7 +50,7 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
     ) {
-        List<Listing> listings = service.queryListings(query, count, offset);
+        List<Listing> listings = service.queryListings(query, count, offset); // FIXME add summary
         return new ResponseContent.Builder().setData(listings).build();
     }
 

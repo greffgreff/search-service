@@ -47,7 +47,7 @@ public class SearchService {
         return repository.queryAnyNearbyGeoCode(lat, lon, range, pagination);
     }
 
-    public List<Listing> queryListingsNearbyAddress(String query, Integer range, Integer count, Integer offset, String ...address) {
+    public List<Listing> queryListingsNearbyAddress(String query, Integer range, Integer count, Integer offset, String address) {
         Pageable pagination = PageRequest.of(offset, count);
         Pair<Double, Double> geoCords;
         try {

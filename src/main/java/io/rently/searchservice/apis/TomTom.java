@@ -15,8 +15,8 @@ public class TomTom {
 
     private TomTom() { }
 
-    public static Pair<Double, Double> getGeoFromAddress(String ...address) throws Exception {
-        String requestUrl = BASE_URL + String.join("%20", address) + ".json?storeResult=false&view=Unified&key=" + TOMTOM_KEY;
+    public static Pair<Double, Double> getGeoFromAddress(String address) throws Exception {
+        String requestUrl = BASE_URL + address.replace(" ", "%20") + ".json?storeResult=false&view=Unified&key=" + TOMTOM_KEY;
         Broadcaster.debug(requestUrl);
         URL url = new URL(requestUrl);
         URLConnection urlConnection = url.openConnection();
