@@ -2,12 +2,16 @@ package io.rently.searchservice.interfaces;
 
 import io.rently.searchservice.dtos.Listing;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
 
 public interface ListingsRepository extends MongoRepository<Listing, String> {
+
+    @Aggregation("{ $sample: { size: ?0 } }")
+    List<Listing> queryAny(Integer size);
 
     @Query("{ $text: { $search: ?0 } }")
     List<Listing> query(String query, Pageable pageable);
