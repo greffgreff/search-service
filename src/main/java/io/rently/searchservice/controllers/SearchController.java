@@ -18,6 +18,12 @@ import static java.util.stream.Collectors.joining;
 @RequestMapping("/api/v1/search")
 public class SearchController {
 
+    //      /api/v1/search/aggregatedQuery/{query} <- redirecting to other endpoints only
+    //      /api/v1/search/listings/{query}
+    //      /api/v1/search/listings/address/{query}
+    //      /api/v1/search/listings/nearby/address/{query}
+    //      /api/v1/search/listings/nearby/geo/{query}
+
     @Autowired
     public SearchService service;
 
@@ -37,7 +43,7 @@ public class SearchController {
                 return new RedirectView("/api/v1/search/listings/address/" + parsedQuery + parsedParams);
             }
         }
-        throw Errors.MISSING_PARAMS;
+        throw Errors.INVALID_REQUEST_PARAMS;
     }
 
     @GetMapping({"/listings/{query}" , "/listings"})
@@ -47,6 +53,19 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
     ) {
         List<Listing> listings = service.queryListings(query, count, offset);
+        return new ResponseContent.Builder().setData(listings).build();
+    }
+
+    @GetMapping({"/listings/address/{query}", "/listings/address"})
+    public ResponseContent fetchListingsByQueryAtAddress(
+            @PathVariable(required = false) String query,
+            @RequestParam(required = false) String country,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String zip,
+            @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
+    ) {
+        List<Listing> listings = service.queryListingsAtAddress(query, country, city, zip, count, offset);
         return new ResponseContent.Builder().setData(listings).build();
     }
 
@@ -72,19 +91,6 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
     ) {
         List<Listing> listings = service.queryListingsNearbyAddress(query, range, count, offset, address);
-        return new ResponseContent.Builder().setData(listings).build();
-    }
-
-    @GetMapping({"/listings/address/{query}", "/listings/address"})
-    public ResponseContent fetchListingsByQueryAtAddress(
-            @PathVariable(required = false) String query,
-            @RequestParam(required = false) String country,
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String zip,
-            @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
-            @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
-    ) {
-        List<Listing> listings = service.queryListingsAtAddress(query, country, city, zip, count, offset);
         return new ResponseContent.Builder().setData(listings).build();
     }
 }
