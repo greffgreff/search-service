@@ -17,52 +17,66 @@ import java.util.List;
 public class SearchService {
 
     @Autowired
-    public ListingsRepository repository;
+    private ListingsRepository repository;
 
-    public List<Listing> queryAny(Integer count, Integer page) {
-        Broadcaster.info("Fetching listings randomly. Pagination: count = " + count + ", page = " + page);
-        Pageable pageable = PageRequest.of(page, count);
-        return repository.findAll(pageable).getContent();
-    }
-
-    public List<Listing> query(String query, Integer count, Integer page) {
-        Broadcaster.info("Fetching listings by query. Pagination: count = " + count + ", page = " + page);
-        Broadcaster.info("Parameters: query = " + query);
-        Pageable pageable = PageRequest.of(page, count);
-        return repository.queryAny(query, pageable);
-    }
-
-    public List<Listing> queryByAddress(String query, String country, String city, String zip, Integer count, Integer page) {
-        Broadcaster.info("Fetching listings by query and location. Pagination: count = " + count + ", page = " + page);
-        Broadcaster.info("Parameters: query = " + query + ", country = " + country + ", city = " + city + ", zip = " + zip);
-        Pageable pageable = PageRequest.of(page, count);
-        if (zip != null && country == null && city == null) {
-            throw new IllegalArgumentException("Cannot specify `zip` parameter without either `country` or `city` parameters");
+    public List<Listing> queryListings(String query, Integer count, Integer offset) {
+        Pageable pagination = PageRequest.of(offset, count);
+        if (query != null) {
+            Broadcaster.info("Fetching listings by query. Pagination: count = " + pagination.getPageSize() + ", page = " + pagination.getPageNumber());
+            Broadcaster.info("Parameters: query = " + query);
+            return repository.query(query, pagination);
         }
-        return repository.queryAtAddress(query, country, city, zip, pageable);
+        Broadcaster.info("Fetching listings randomly. Pagination: count = " + pagination.getPageSize() + ", page = " + pagination.getPageNumber());
+        return repository.findAll(pagination).getContent();
     }
 
-    public List<Listing> queryNearbyByAddress(String query, String country, String city, String zip, Integer range, Integer count, Integer page) {
-        Broadcaster.info("Fetching listings by query and location. Pagination: count = " + count + ", page = " + page);
-        Broadcaster.info("Parameters: query = " + query + ", country = " + country + ", city = " + city + ", zip = " + zip);
-        Pageable pageable = PageRequest.of(page, count);
-        try {
-            Pair<Double, Double> geoCords = TomTom.getGeoFromAddress(country, city, zip);
-            return repository.queryAnyNearbyGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pageable);
-        } catch (Exception ex) {
-            throw Errors.NO_ADDRESS_FOUND;
-        }
-    }
-
-    public List<Listing> queryNearbyByGeocode(String query, Double lat, Double lon, Integer range, Integer count, Integer page) {
-        Broadcaster.info("Fetching listings by query and geocode. Pagination: count = " + count + ", page = " + page);
-        Broadcaster.info("Parameters: lat = " + lat + ", lon = " + lon);
+    public List<Listing> queryListingsNearbyGeo(String query, Double lat, Double lon, Integer range, Integer count, Integer offset) {
         if (lat > 90 || lat < -90) {
             throw Errors.INVALID_LAT;
         } else if (lon > 180 || lon < -180) {
             throw Errors.INVALID_LON;
         }
-        Pageable pageable = PageRequest.of(page, count);
-        return repository.queryNearbyGeoCode(query, lon, lat, range, pageable);
+        Pageable pagination = PageRequest.of(offset, count);
+        if (query != null) {
+            Broadcaster.info("Fetching listings by query and geocode. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
+            Broadcaster.info("Parameters: query = " + query + " lat = " + lat + ", lon = " + lon);
+            return repository.queryNearbyGeoCode(query, lon, lat, range, pagination);
+        }
+        Broadcaster.info("Fetching listings nearby geocode. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
+        Broadcaster.info("Parameters: lat = " + lat + ", lon = " + lon);
+        return repository.queryAnyNearbyGeoCode(lat, lon, range, pagination);
+    }
+
+    public List<Listing> queryListingsNearbyAddress(String query, Integer range, Integer count, Integer offset, String ...address) {
+        Pageable pagination = PageRequest.of(offset, count);
+        Pair<Double, Double> geoCords;
+        try {
+            geoCords = TomTom.getGeoFromAddress(address);
+        } catch (Exception ex) {
+            throw Errors.NO_ADDRESS_FOUND;
+        }
+        if (query != null) {
+            Broadcaster.info("Fetching listings by query and location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
+            Broadcaster.info("Parameters: query = " + query + " address = " + String.join(" ", address));
+            return repository.queryNearbyGeoCode(query, geoCords.getFirst(), geoCords.getSecond(), range, pagination);
+        }
+        Broadcaster.info("Fetching listings by location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
+        Broadcaster.info("Parameters: address = " + String.join(" ", address));
+        return repository.queryAnyNearbyGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pagination);
+    }
+
+    public List<Listing> queryListingsAtAddress(String query, String country, String city, String zip, Integer count, Integer offset) {
+        Pageable pagination = PageRequest.of(offset, count);
+        if (country == null && city == null) {
+            throw Errors.NO_ADDRESS_PARAMS;
+        }
+        if (query != null) {
+            Broadcaster.info("Fetching listings by query and location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
+            Broadcaster.info("Parameters: query = " + query + ", country = " + country + ", city = " + city + ", zip = " + zip);
+            return repository.queryAtAddress(query, country, city, zip, pagination);
+        }
+        Broadcaster.info("Fetching listings by location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
+        Broadcaster.info("Parameters: country = " + country + ", city = " + city + ", zip = " + zip);
+        return repository.queryAnyAtAddress(country, city, zip, pagination);
     }
 }
