@@ -46,7 +46,7 @@ public class SearchService {
         return repository.findAll(pagination);
     }
 
-    public List<Listing> queryListingsNearbyGeo(String query, Double lat, Double lon, Integer range, Integer count, Integer offset) {
+    public Page<Listing> queryListingsNearbyGeo(String query, Double lat, Double lon, Integer range, Integer count, Integer offset) {
         if (lat > 90 || lat < -90) {
             throw Errors.INVALID_LAT;
         } else if (lon > 180 || lon < -180) {
@@ -63,7 +63,7 @@ public class SearchService {
         return repository.queryAnyNearbyGeoCode(lat, lon, range, pagination);
     }
 
-    public List<Listing> queryListingsNearbyAddress(String query, Integer range, Integer count, Integer offset, String address) {
+    public Page<Listing> queryListingsNearbyAddress(String query, Integer range, Integer count, Integer offset, String address) {
         Pageable pagination = PageRequest.of(offset, count);
         Pair<Double, Double> geoCords;
         try {
@@ -81,7 +81,7 @@ public class SearchService {
         return repository.queryAnyNearbyGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pagination);
     }
 
-    public List<Listing> queryListingsAtAddress(String query, String country, String city, String zip, Integer count, Integer offset) {
+    public Page<Listing> queryListingsAtAddress(String query, String country, String city, String zip, Integer count, Integer offset) {
         Pageable pagination = PageRequest.of(offset, count);
         if (country == null && city == null) {
             throw Errors.NO_ADDRESS_PARAMS;
