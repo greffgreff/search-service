@@ -23,7 +23,7 @@ public class SearchController {
 
     //      /api/v1/listings/random
     //      /api/v1/listings/id/{id} FIXME add missing endpoint and remove get from listing endpoint
-    //      /api/v1/listings/search/aggregatedQuery/{query} <- redirecting to other endpoints only
+    //      /api/v1/listings/search/aggregatedSearch/{query} <- redirecting to other endpoints only
     //      /api/v1/listings/search/{query}
     //      /api/v1/listings/search/address/{query}
     //      /api/v1/listings/search/nearby/address/{query}
@@ -32,13 +32,13 @@ public class SearchController {
     @Autowired
     public SearchService service;
 
-    @GetMapping({"/aggregatedQuery/{query}", "/aggregatedQuery"})
+    @GetMapping({"/aggregatedSearch/{query}", "/aggregatedQuery"})
     public RedirectView handleRedirection(@PathVariable(required = false) String query, @RequestParam Map<String, ?> parameters) {
         String parsedQuery = (query != null ? query : "");
         String parsedParams = parameters.entrySet().stream().map(Object::toString).collect(joining("&"));
         parsedParams = (parsedParams.isEmpty() ? "" : "?" + parsedParams);
         if ((parameters.containsKey("count") && parameters.containsKey("offset") && parameters.size() == 2) || parameters.isEmpty()) {
-            return new RedirectView("/api/v1/search/listings/" + parsedQuery + parsedParams);
+            return new RedirectView("/api/v1/listings/search/" + parsedQuery + parsedParams);
         } else if (parameters.containsKey("lat") && parameters.containsKey("lon")) {
             return new RedirectView("/api/v1/listings/search/nearby/geo/" + parsedQuery + parsedParams);
         } else if (parameters.containsKey("country") || parameters.containsKey("city") || parameters.containsKey("zip")) {
