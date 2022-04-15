@@ -56,7 +56,7 @@ public class SearchService {
         if (query != null) {
             Broadcaster.info("Fetching listings by query and geocode. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
             Broadcaster.info("Parameters: query = " + query + " lat = " + lat + ", lon = " + lon);
-            return repository.queryNearbyGeoCode(query, lon, lat, range, pagination);
+            return repository.queryNearbyGeoCode(query, lat, lon, range, pagination);
         }
         Broadcaster.info("Fetching listings nearby geocode. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
         Broadcaster.info("Parameters: lat = " + lat + ", lon = " + lon);
