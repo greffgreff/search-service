@@ -43,22 +43,4 @@ public class ErrorController {
         response.setStatus(ex.getStatus().value());
         return new ResponseContent.Builder(ex.getStatus()).setMessage(ex.getReason()).build();
     }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseBody
-    public static ResponseContent handleIllegalArgumentException(HttpServletResponse response, IllegalArgumentException ex) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        Broadcaster.httpError(ex.getMessage(), status);
-        response.setStatus(status.value());
-        return new ResponseContent.Builder(status).setMessage(ex.getMessage()).build();
-    }
-
-    @ExceptionHandler(NullPointerException.class)
-    @ResponseBody
-    public static ResponseContent handleNullPointerException(HttpServletResponse response, NullPointerException ex) {
-        HttpStatus status = HttpStatus.NOT_FOUND;
-        Broadcaster.httpError(ex.getMessage(), status);
-        response.setStatus(status.value());
-        return new ResponseContent.Builder(status).setMessage(ex.getMessage()).build();
-    }
 }
