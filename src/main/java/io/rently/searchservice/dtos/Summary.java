@@ -40,13 +40,13 @@ public class Summary {
     private final String address;
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public final String prevPage;
-    @JsonProperty
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public final String currentPage;
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public final String nextPage;
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public final String prevPage;
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public final int totalPages;
