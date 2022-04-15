@@ -12,12 +12,22 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SearchService {
 
     @Autowired
     private ListingsRepository repository;
+
+    public Listing queryById(String id) {
+        Optional<Listing> listing = repository.findById(id);
+        if (listing.isPresent()) {
+            return listing.get();
+        } else {
+            throw Errors.LISTING_NOT_FOUND;
+        }
+    }
 
     public List<Listing> queryRandomly(Integer count) {
         Broadcaster.info("Fetching listings randomly. Pagination: count = " +  count);

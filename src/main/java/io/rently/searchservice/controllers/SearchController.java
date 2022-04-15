@@ -22,7 +22,7 @@ import static java.util.stream.Collectors.joining;
 public class SearchController {
 
     //      /api/v1/listings/random
-    //      /api/v1/listings/id/{id} FIXME add missing endpoint and remove get from listing endpoint
+    //      /api/v1/listings/id/{id}
     //      /api/v1/listings/search/aggregatedSearch/{query} <- redirecting to other endpoints only
     //      /api/v1/listings/search/{query}
     //      /api/v1/listings/search/address/{query}
@@ -49,8 +49,20 @@ public class SearchController {
         throw Errors.INVALID_REQUEST_PARAMS;
     }
 
+    @GetMapping("/id/{id}")
+    public ResponseContent fetchListingById(
+            @PathVariable String id
+    ) {
+        Listing listing = service.queryById(id);
+
+        return new ResponseContent
+                .Builder()
+                .setData(listing)
+                .build();
+    }
+
     @GetMapping("/random")
-    public ResponseContent fetchListingByQuery(
+    public ResponseContent fetchListingsByQuery(
             @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count
     ) {
         List<Listing> listings = service.queryRandomly(count);
