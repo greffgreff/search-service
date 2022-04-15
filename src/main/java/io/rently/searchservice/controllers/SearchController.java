@@ -6,7 +6,9 @@ import io.rently.searchservice.dtos.Summary;
 import io.rently.searchservice.dtos.enums.QueryType;
 import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.services.SearchService;
+import io.rently.searchservice.utils.Broadcaster;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -85,19 +87,36 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset
     ) {
-        List<Listing> listings = service.queryListings(query, count, offset);
+        Page<Listing> search = service.queryListings(query, count, offset);
+
+        String uriBase = "http://localhost:8082/api/v1/listings/search" + (query != null ? "/" + query : "");
+        String currentPage = uriBase + "?count=" + count + "&offset=" + offset;
+        String nextPage = null;
+        String prevPage = null;
+
+        if (offset > 0) {
+            prevPage = uriBase + "?count=" + count + "&offset=" + (offset - 1);
+        }
+        if (offset+1 < search.getTotalPages()) {
+            nextPage = uriBase + "?count=" + count + "&offset=" + (offset + 1);
+        }
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED)
-                .setCount(count)
-                .setOffset(offset)
+                .setTotalResults(search.getNumberOfElements())
+                .setCount(search.getPageable().getPageSize())
+                .setOffset(search.getPageable().getPageNumber())
                 .setQuery(query)
+                .setCurrentPage(currentPage)
+                .setNextPage(nextPage)
+                .setPrevPage(prevPage)
+                .setTotalPages(search.getTotalPages())
                 .build();
 
         return new ResponseContent
                 .Builder()
                 .setSummary(summary)
-                .setData(listings)
+                .setData(search.getContent())
                 .build();
     }
 

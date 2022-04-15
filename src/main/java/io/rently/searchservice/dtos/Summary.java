@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.rently.searchservice.dtos.enums.QueryType;
 
 public class Summary {
+    @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String query;
     @JsonProperty
@@ -12,7 +13,7 @@ public class Summary {
     private final int totalResults;
     @JsonProperty
     private final int count;
-    @JsonProperty("page")
+    @JsonProperty
     private final int offset;
     @JsonProperty
     private final QueryType queryType;
@@ -37,6 +38,18 @@ public class Summary {
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private final String address;
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public final String prevPage;
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public final String currentPage;
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public final String nextPage;
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public final int totalPages;
 
     private Summary(Builder builder) {
         this.query = builder.query;
@@ -51,6 +64,10 @@ public class Summary {
         this.city = builder.city;
         this.zip = builder.zip;
         this.address = builder.address;
+        this.prevPage = builder.prevPage;
+        this.totalPages = builder.totalPages;
+        this.nextPage = builder.nextPage;
+        this.currentPage = builder.currentPage;
     }
 
     public static class Builder {
@@ -66,11 +83,34 @@ public class Summary {
         private String city;
         private String zip;
         private String address;
+        private String prevPage;
+        private String currentPage;
+        private String nextPage;
+        private int totalPages;
 
         public Builder(QueryType queryType) {
             this.queryType = queryType;
         }
 
+        public Builder setPrevPage(String prevPage) {
+            this.prevPage = prevPage;
+            return this;
+        }
+
+        public Builder setTotalPages(int totalPages) {
+            this.totalPages = totalPages;
+            return this;
+        }
+
+        public Builder setCurrentPage(String currentPage) {
+            this.currentPage = currentPage;
+            return this;
+        }
+
+        public Builder setNextPage(String nextPage) {
+            this.nextPage = nextPage;
+            return this;
+        }
         public Builder setAddress(String address) {
             this.address = address;
             return this;

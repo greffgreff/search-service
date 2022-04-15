@@ -1,6 +1,7 @@
 package io.rently.searchservice.interfaces;
 
 import io.rently.searchservice.dtos.Listing;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -14,7 +15,7 @@ public interface ListingsRepository extends MongoRepository<Listing, String> {
     List<Listing> queryAny(Integer size);
 
     @Query("{ $text: { $search: ?0 } }")
-    List<Listing> query(String query, Pageable pageable);
+    Page<Listing> query(String query, Pageable pageable);
 
     @Query("{ 'address.location': { $near: {$maxDistance: ?2, $geometry: { type: 'Point', coordinates: [?0, ?1]} } } }")
     List<Listing> queryAnyNearbyGeoCode(Double lon, Double lat, Integer range, Pageable pageable);

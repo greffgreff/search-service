@@ -6,6 +6,7 @@ import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.interfaces.ListingsRepository;
 import io.rently.searchservice.utils.Broadcaster;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
@@ -34,7 +35,7 @@ public class SearchService {
         return repository.queryAny(count);
     }
 
-    public List<Listing> queryListings(String query, Integer count, Integer offset) {
+    public Page<Listing> queryListings(String query, Integer count, Integer offset) {
         Pageable pagination = PageRequest.of(offset, count);
         if (query != null) {
             Broadcaster.info("Fetching listings by query. Pagination: count = " + pagination.getPageSize() + ", page = " + pagination.getPageNumber());
@@ -42,7 +43,7 @@ public class SearchService {
             return repository.query(query, pagination);
         }
         Broadcaster.info("Fetching listings in order. Pagination: count = " + pagination.getPageSize() + ", page = " + pagination.getPageNumber());
-        return repository.findAll(pagination).getContent();
+        return repository.findAll(pagination);
     }
 
     public List<Listing> queryListingsNearbyGeo(String query, Double lat, Double lon, Integer range, Integer count, Integer offset) {
