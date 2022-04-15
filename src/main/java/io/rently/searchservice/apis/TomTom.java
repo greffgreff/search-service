@@ -24,8 +24,8 @@ public class TomTom {
         JSONObject response = new JSONObject(bufferedReader.readLine());
         JSONObject firstResult = (JSONObject) response.getJSONArray("results").get(0);
         JSONObject position = firstResult.getJSONObject("position");
-        Pair<Double, Double> geo = Pair.of(position.getDouble("lon"), position.getDouble("lat"));
-        Broadcaster.debug("Score = " + firstResult.getDouble("score") + ", lat = " + geo.getSecond() + ", lon = " + geo.getFirst());
+        Pair<Double, Double> geo = Pair.of(position.getDouble("lat"), position.getDouble("lon"));
+        Broadcaster.debug("Score = " + firstResult.getDouble("score") + ", lat = " + geo.getFirst() + ", lon = " + geo.getSecond());
         return geo;
     }
 }
