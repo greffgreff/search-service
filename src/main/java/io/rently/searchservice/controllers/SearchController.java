@@ -93,9 +93,9 @@ public class SearchController {
         Page<Listing> search = service.queryListings(query, count, offset);
 
         UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search").addPathVar(query);
-        String currentPage = uriBuilder.addParam("count", count).addParam("offset", offset).create();
-        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParam("count", count).addParam("offset", offset+1).create() : null;
-        String prevPage = offset > 0 ? uriBuilder.addParam("count", count).addParam("offset", offset-1).create() : null;
+        String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
+        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED)
@@ -130,9 +130,9 @@ public class SearchController {
         Page<Listing> search = service.queryListingsAtAddress(query, country, city, zip, count, offset);
 
         UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/address").addPathVar(query);
-        String currentPage = uriBuilder.addParam("count", count).addParam("offset", offset).create();
-        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParam("count", count).addParam("offset", offset+1).create() : null;
-        String prevPage = offset > 0 ? uriBuilder.addParam("count", count).addParam("offset", offset-1).create() : null;
+        String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
+        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED_AT_ADDRESS)
@@ -167,9 +167,9 @@ public class SearchController {
         Page<Listing> search = service.queryListingsNearbyGeo(query, lat, lon, range, count, offset);
 
         UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/geo").addPathVar(query);
-        String currentPage = uriBuilder.addParam("count", count).addParam("offset", offset).create();
-        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParam("count", count).addParam("offset", offset+1).create() : null;
-        String prevPage = offset > 0 ? uriBuilder.addParam("count", count).addParam("offset", offset-1).create() : null;
+        String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
+        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED_NEARBY_GEO)
@@ -203,9 +203,9 @@ public class SearchController {
         Page<Listing> search = service.queryListingsNearbyAddress(query, range, count, offset, address);
 
         UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/address").addPathVar(query);
-        String currentPage = uriBuilder.addParam("count", count).addParam("offset", offset).create();
-        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParam("count", count).addParam("offset", offset+1).create() : null;
-        String prevPage = offset > 0 ? uriBuilder.addParam("count", count).addParam("offset", offset-1).create() : null;
+        String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
+        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED_NEARBY_ADDRESS)

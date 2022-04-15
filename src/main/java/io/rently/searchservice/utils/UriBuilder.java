@@ -18,12 +18,21 @@ public class UriBuilder {
     }
 
     public UriBuilder addParam(String key, @Nullable Object value) {
-        if (queryParameters.containsKey(key)) {
-            throw new IllegalArgumentException("Query parameter already exists.");
-        } else if (Objects.equals(key, "") || key == null) {
-            throw new IllegalArgumentException("Path variable cannot be null or an empty string.");
+        if (Objects.equals(key, "") || key == null) {
+            throw new IllegalArgumentException("Query parameter cannot be null or an empty string.");
         }
-        queryParameters.put(key, value);
+        if (queryParameters.containsKey(key)) {
+            queryParameters.replace(key, value);
+        } else {
+            queryParameters.put(key, value);
+        }
+        return this;
+    }
+
+    public UriBuilder addParams(HashMap<String, Object> queryParameters) {
+        for (Map.Entry<String, Object> param: queryParameters.entrySet()) {
+            this.addParam(param.getKey(), param.getValue());
+        }
         return this;
     }
 
