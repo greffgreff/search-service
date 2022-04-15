@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Base64;
 import java.util.Optional;
 
 @RestController
@@ -19,19 +20,19 @@ public class ImageController { // FIXME move to new service
     @Autowired
     public ImageRepository repository;
 
-    @GetMapping(value = "/{id}", produces = { MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE })
-    public @ResponseBody byte[] handleGetImage(@PathVariable String id) {
+    @GetMapping(value = "/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public byte[] handleGetImage(@PathVariable String id) {
         Broadcaster.info("Fetching image by id: " + id);
         Optional<Image> data = repository.queryById(id);
         if (data.isPresent()) {
             Image image = data.get();
-            return image.dataUrl.getBytes();
+            return  Base64.getDecoder().decode(image.dataUrl);
         }
         throw Errors.NO_IMAGE;
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(value = "/{id}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @PostMapping(value = "/{id}")
     public ResponseContent handlePostImage(@PathVariable String id, @RequestBody String data) {
         Broadcaster.info("Adding image by id: " + id);
         Image image = new Image(id, data);
