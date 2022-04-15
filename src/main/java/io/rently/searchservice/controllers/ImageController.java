@@ -5,6 +5,7 @@ import io.rently.searchservice.dtos.ResponseContent;
 import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.interfaces.ImageRepository;
 import io.rently.searchservice.utils.Broadcaster;
+import io.rently.searchservice.utils.Images;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,8 +26,8 @@ public class ImageController { // FIXME move to new service
         Broadcaster.info("Fetching image by id: " + id);
         Optional<Image> data = repository.queryById(id);
         if (data.isPresent()) {
-            Image image = data.get();
-            return  Base64.getDecoder().decode(image.dataUrl);
+            byte[] originalImage = Base64.getDecoder().decode(data.get().dataUrl);
+            return Images.addRentlyWatermark(originalImage);
         }
         throw Errors.NO_IMAGE;
     }
@@ -35,17 +36,15 @@ public class ImageController { // FIXME move to new service
     @PostMapping(value = "/{id}")
     public ResponseContent handlePostImage(@PathVariable String id, @RequestBody String data) {
         Broadcaster.info("Adding image by id: " + id);
-        Image image = new Image(id, data);
-        repository.save(image);
+        repository.save(new Image(id, data));
         return new ResponseContent.Builder(HttpStatus.CREATED).setMessage("Successfully added image to database").build();
     }
 
     @PutMapping(value = "/{id}")
     public ResponseContent handlePutImage(@PathVariable String id, @RequestBody String data) {
         Broadcaster.info("Updating image by id: " + id);
-        Image image = new Image(id, data);
         repository.deleteById(id);
-        repository.save(image);
+        repository.save(new Image(id, data));
         return new ResponseContent.Builder().setMessage("Successfully updated image in database").build();
     }
 
