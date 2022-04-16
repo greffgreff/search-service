@@ -37,9 +37,6 @@ public class UriBuilder {
     }
 
     public UriBuilder addPathVar(@Nullable String variable) {
-        if (pathVariables.contains(variable)) {
-            throw new IllegalArgumentException("Path variable already exists.");
-        }
         pathVariables.add(variable);
         return this;
     }
@@ -62,7 +59,6 @@ public class UriBuilder {
             uri.append("?").append(String.join("&", parsedParams));
         }
         queryParameters.clear();
-        pathVariables.clear();
         return uri.toString();
     }
 }

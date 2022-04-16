@@ -5,20 +5,26 @@ import io.rently.searchservice.dtos.Listing;
 import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.interfaces.ListingsRepository;
 import io.rently.searchservice.utils.Broadcaster;
+import io.rently.searchservice.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 @Service
 public class SearchService {
+
+    @Autowired
+    private MongoTemplate template;
 
     @Autowired
     private ListingsRepository repository;
@@ -40,11 +46,10 @@ public class SearchService {
     public Page<Listing> queryListings(String query, Integer count, Integer offset) {
         Pageable pagination = PageRequest.of(offset, count);
         if (query != null) {
+            String regexQuery = Utils.getKeywordsFromQuery(query);
             Broadcaster.info("Fetching listings by query. Pagination: count = " + pagination.getPageSize() + ", page = " + pagination.getPageNumber());
-            Broadcaster.info("Parameters: query = " + query);
-            List<String> keywords = Arrays.stream(query.split(" ")).toList();
-            keywords = keywords.stream().map(keyword -> "(?=.*" + keyword + ")").toList();
-            return repository.query(String.join("", keywords), pagination);
+            Broadcaster.info("Parameters: query = " + regexQuery);
+            return repository.query(regexQuery, pagination);
         }
         Broadcaster.info("Fetching listings in order. Pagination: count = " + pagination.getPageSize() + ", page = " + pagination.getPageNumber());
         return repository.findAll(pagination);
@@ -58,9 +63,10 @@ public class SearchService {
         }
         Pageable pagination = PageRequest.of(offset, count);
         if (query != null) {
+            String regexQuery = Utils.getKeywordsFromQuery(query);
             Broadcaster.info("Fetching listings by query and geocode. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
-            Broadcaster.info("Parameters: query = " + query + " lat = " + lat + ", lon = " + lon);
-            return repository.queryNearbyGeoCode(query.replace(" ", "|"), lat, lon, range, pagination);
+            Broadcaster.info("Parameters: query = " + regexQuery + " lat = " + lat + ", lon = " + lon);
+            return repository.queryNearbyGeoCode(Utils.getKeywordsFromQuery(query), lat, lon, range, pagination);
         }
         Broadcaster.info("Fetching listings nearby geocode. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
         Broadcaster.info("Parameters: lat = " + lat + ", lon = " + lon);
@@ -77,11 +83,11 @@ public class SearchService {
         }
         if (query != null) {
             Broadcaster.info("Fetching listings by query and location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
-            Broadcaster.info("Parameters: query = " + query + " address = " + String.join(" ", address));
-            return repository.queryNearbyGeoCode(query.replace(" ", "|"), geoCords.getFirst(), geoCords.getSecond(), range, pagination);
+            Broadcaster.info("Parameters: query = " + Utils.getKeywordsFromQuery(query) + ", address = " + String.join(" ", address)  + ", range = " + range);
+            return repository.queryNearbyGeoCode(Utils.getKeywordsFromQuery(query), geoCords.getFirst(), geoCords.getSecond(), range, pagination);
         }
         Broadcaster.info("Fetching listings by location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
-        Broadcaster.info("Parameters: address = " + String.join(" ", address));
+        Broadcaster.info("Parameters: address = " + String.join(" ", address) + ", range = " + range);
         return repository.queryAnyNearbyGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pagination);
     }
 
@@ -92,8 +98,8 @@ public class SearchService {
         }
         if (query != null) {
             Broadcaster.info("Fetching listings by query and location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
-            Broadcaster.info("Parameters: query = " + query + ", country = " + country + ", city = " + city + ", zip = " + zip);
-            return repository.queryAtAddress(query.replace(" ", "|"), country, city, zip, pagination);
+            Broadcaster.info("Parameters: query = " + Utils.getKeywordsFromQuery(query) + ", country = " + country + ", city = " + city + ", zip = " + zip);
+            return repository.queryAtAddress(Utils.getKeywordsFromQuery(query), country, city, zip, pagination);
         }
         Broadcaster.info("Fetching listings by location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
         Broadcaster.info("Parameters: country = " + country + ", city = " + city + ", zip = " + zip);

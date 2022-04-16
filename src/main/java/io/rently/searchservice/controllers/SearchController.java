@@ -8,6 +8,7 @@ import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.services.SearchService;
 import io.rently.searchservice.utils.Broadcaster;
 import io.rently.searchservice.utils.UriBuilder;
+import io.rently.searchservice.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -164,11 +165,14 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
             @RequestParam HashMap<String, Object> params
     ) {
-        Page<Listing> search = service.queryListingsNearbyGeo(query, lat, lon, range, count, offset);
+        Page<Listing> search = service.queryListingsNearbyGeo(query, lat, lon, range, 9999, 0);
+
+        List<Listing> listings = Utils.getPage(search.getContent(), offset, count);
+        int totalPages = search.getContent().size() / count;
 
         UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/geo").addPathVar(query);
         String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
-        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String nextPage = offset + 1 < totalPages ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
         String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
 
         Summary summary = new Summary
@@ -176,18 +180,18 @@ public class SearchController {
                 .setQuery(query)
                 .setParams(params)
                 .setTotalResults((int) search.getTotalElements())
-                .setCount(search.getPageable().getPageSize())
-                .setOffset(search.getPageable().getPageNumber())
+                .setCount(count)
+                .setOffset(offset)
                 .setCurrentPage(currentPage)
                 .setNextPage(nextPage)
                 .setPrevPage(prevPage)
-                .setTotalPages(search.getTotalPages())
+                .setTotalPages(totalPages)
                 .build();
 
         return new ResponseContent
                 .Builder()
                 .setSummary(summary)
-                .setData(search.getContent())
+                .setData(listings)
                 .build();
     }
 
@@ -200,11 +204,14 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
             @RequestParam HashMap<String, Object> params
     ) {
-        Page<Listing> search = service.queryListingsNearbyAddress(query, range, count, offset, address);
+        Page<Listing> search = service.queryListingsNearbyAddress(query, range, 9999, 0, address);
+
+        List<Listing> listings = Utils.getPage(search.getContent(), offset, count);
+        int totalPages = search.getContent().size() / count;
 
         UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/address").addPathVar(query);
         String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
-        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String nextPage = offset + 1 < totalPages ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
         String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
 
         Summary summary = new Summary
@@ -212,18 +219,18 @@ public class SearchController {
                 .setQuery(query)
                 .setParams(params)
                 .setTotalResults((int) search.getTotalElements())
-                .setCount(search.getPageable().getPageSize())
-                .setOffset(search.getPageable().getPageNumber())
+                .setCount(count)
+                .setOffset(offset)
                 .setCurrentPage(currentPage)
                 .setNextPage(nextPage)
                 .setPrevPage(prevPage)
-                .setTotalPages(search.getTotalPages())
+                .setTotalPages(totalPages)
                 .build();
 
         return new ResponseContent
                 .Builder()
                 .setSummary(summary)
-                .setData(search.getContent())
+                .setData(listings)
                 .build();
     }
 }

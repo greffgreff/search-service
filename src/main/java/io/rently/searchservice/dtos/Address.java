@@ -17,6 +17,7 @@ public class Address {
     @JsonIgnore
     private String formattedAddress;
     @JsonIgnore
+    @GeoSpatialIndexed
     private GeoJsonPoint location;
 
     protected Address() { }
