@@ -15,23 +15,23 @@ public interface ListingsRepository extends MongoRepository<Listing, String> {
     @Aggregation("{ $sample: { size: ?0 } }")
     List<Listing> queryAny(Integer size);
 
-    @Query("{ $text: { $search: ?0 } }")
+    @Query("{ $or: [ {'name': {$regex: ?0, $options: 'i'} }, {'desc': {$regex: ?0, $options: 'i'} } ] }")
     Page<Listing> query(String query, Pageable pageable);
 
     @Query("{ 'address.location': { $near: {$maxDistance: ?2, $geometry: {type: 'Point', coordinates: [?1, ?0]} } } }")
     Page<Listing> queryAnyNearbyGeoCode(Double lat, Double lon, Integer range, Pageable pageable);
 
     @Query("{ $and: [" +
-            "{ $or: [ {'name': /?0/i }, {'desc': /?0/i } ] }, " +
+            "{ $or: [ {'name': {$regex: ?0, $options: 'i'} }, {'desc': {$regex: ?0, $options: 'i'} } ] }, " +
             "{ 'address.location': { $near: {$maxDistance: ?3, $geometry: {type: 'Point', coordinates: [?2, ?1]} } } }" +
             "] }")
     Page<Listing> queryNearbyGeoCode(String query, Double lat, Double lon, Integer range, Pageable pageable);
 
-    @Query("{ $or: [ {'address.country': ?1}, {'address.city': ?2}, {'address.zip': ?3} ] }")
+    @Query("{ $or: [ {'address.country': /?1/}, {'address.city': /?2/}, {'address.zip': /?3/} ] }")
     Page<Listing> queryAnyAtAddress(String country, String city, String zip, Pageable pageable);
 
     @Query("{ $and: [" +
-            "{ $text: { $search: ?0 } }, " +
+            "{ $or: [ {'name': {$regex: ?0, $options: 'i'} }, {'desc': {$regex: ?0, $options: 'i'} } ] }" +
             "{ $or: [ {'address.country': ?1}, {'address.city': ?2}, {'address.zip': ?3} ] }" +
             "] }")
     Page<Listing> queryAtAddress(String query, String country, String city, String zip, Pageable pageable);
