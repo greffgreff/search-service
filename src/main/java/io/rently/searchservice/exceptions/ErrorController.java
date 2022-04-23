@@ -1,6 +1,7 @@
 package io.rently.searchservice.exceptions;
 
 import io.rently.searchservice.dtos.ResponseContent;
+import io.rently.searchservice.services.MailerService;
 import io.rently.searchservice.utils.Broadcaster;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -22,6 +23,7 @@ public class ErrorController {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         Broadcaster.error(exception);
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        MailerService.dispatchErrorToDevs(exception);
         return new ResponseContent.Builder(status).setMessage(msg).build();
     }
 
