@@ -6,7 +6,6 @@ import io.rently.searchservice.dtos.Summary;
 import io.rently.searchservice.dtos.enums.QueryType;
 import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.services.SearchService;
-import io.rently.searchservice.utils.Broadcaster;
 import io.rently.searchservice.utils.UriBuilder;
 import io.rently.searchservice.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import java.util.HashMap;
@@ -68,7 +68,7 @@ public class SearchController {
 
     @GetMapping({"/random/", "/random"})
     public ResponseContent fetchListingsByQuery(
-            @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count
     ) {
         List<Listing> listings = service.queryRandomly(count);
 
@@ -87,7 +87,7 @@ public class SearchController {
     @GetMapping({"/search/{query}" , "/search"})
     public ResponseContent fetchListingByQuery(
             @PathVariable(required = false) String query,
-            @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
             @RequestParam HashMap<String, Object> params
     ) {
@@ -124,7 +124,7 @@ public class SearchController {
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String zip,
-            @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
             @RequestParam HashMap<String, Object> params
     ) {
@@ -158,16 +158,16 @@ public class SearchController {
     @GetMapping({"/search/nearby/geo/{query}", "/search/nearby/geo"})
     public ResponseContent fetchListingsByQueryNearbyGeo(
             @PathVariable(required = false) String query,
-            @RequestParam Double lat,
-            @RequestParam Double lon,
+            @RequestParam @Min(-90) @Max(90) Double lat,
+            @RequestParam @Min(-180) @Max(180) Double lon,
             @RequestParam @Positive Integer range,
-            @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
             @RequestParam HashMap<String, Object> params
     ) {
         Page<Listing> search = service.queryListingsNearbyGeo(query, lat, lon, range, 9999, 0);
 
-        List<Listing> listings = Utils.getPage(search.getContent(), offset, count);
+        List<Listing> listings = Utils.getPaginated(search.getContent(), offset, count);
         int totalPages = search.getContent().size() / count;
 
         UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/geo").addPathVar(query);
@@ -200,13 +200,13 @@ public class SearchController {
             @PathVariable(required = false) String query,
             @RequestParam String address,
             @RequestParam @Positive Integer range,
-            @RequestParam(required = false, defaultValue = "50") @Min(1) Integer count,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
             @RequestParam HashMap<String, Object> params
     ) {
         Page<Listing> search = service.queryListingsNearbyAddress(query, range, 9999, 0, address);
 
-        List<Listing> listings = Utils.getPage(search.getContent(), offset, count);
+        List<Listing> listings = Utils.getPaginated(search.getContent(), offset, count);
         int totalPages = search.getContent().size() / count;
 
         UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/address").addPathVar(query);
