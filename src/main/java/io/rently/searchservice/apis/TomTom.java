@@ -2,6 +2,7 @@ package io.rently.searchservice.apis;
 
 import io.rently.searchservice.utils.Broadcaster;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 
 import java.io.BufferedReader;
@@ -10,13 +11,15 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class TomTom {
-    private static final String TOMTOM_KEY = "r6SBW2lsmjrN88T2GgG7ddAwmtmJiwiC"; // FIXME move to .env
-    private static final String BASE_URL = "https://api.tomtom.com/search/2/geocode/";
+    private final String key;
 
-    private TomTom() { }
+    private TomTom(@Value("${tomtom.key}") String key) {
+        this.key = key;
+    }
 
-    public static Pair<Double, Double> getGeoFromAddress(String address) throws Exception {
-        String requestUrl = BASE_URL + address.replace(" ", "%20") + ".json?storeResult=false&view=Unified&key=" + TOMTOM_KEY;
+    public Pair<Double, Double> getGeoFromAddress(String address) throws Exception {
+        String baseUrl = "https://api.tomtom.com/search/2/geocode/";
+        String requestUrl = baseUrl + address.replace(" ", "%20") + ".json?storeResult=false&view=Unified&key=" + key;
         Broadcaster.debug(requestUrl);
         URL url = new URL(requestUrl);
         URLConnection urlConnection = url.openConnection();

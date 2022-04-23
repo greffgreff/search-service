@@ -10,10 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.Metrics;
-import org.springframework.data.geo.Point;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +20,10 @@ import java.util.Optional;
 public class SearchService {
 
     @Autowired
-    private MongoTemplate template;
+    private ListingsRepository repository;
 
     @Autowired
-    private ListingsRepository repository;
+    private TomTom tomtomApi;
 
     public Listing queryById(String id) {
         Optional<Listing> listing = repository.findById(id);
@@ -56,11 +52,6 @@ public class SearchService {
     }
 
     public Page<Listing> queryListingsNearbyGeo(String query, Double lat, Double lon, Integer range, Integer count, Integer offset) {
-        if (lat > 90 || lat < -90) {
-            throw Errors.INVALID_LAT;
-        } else if (lon > 180 || lon < -180) {
-            throw Errors.INVALID_LON;
-        }
         Pageable pagination = PageRequest.of(offset, count);
         if (query != null) {
             String regexQuery = Utils.getKeywordsFromQuery(query);
@@ -77,7 +68,7 @@ public class SearchService {
         Pageable pagination = PageRequest.of(offset, count);
         Pair<Double, Double> geoCords;
         try {
-            geoCords = TomTom.getGeoFromAddress(address);
+            geoCords = tomtomApi.getGeoFromAddress(address);
         } catch (Exception ex) {
             throw Errors.NO_ADDRESS_FOUND;
         }
