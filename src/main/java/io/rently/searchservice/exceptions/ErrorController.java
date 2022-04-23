@@ -1,8 +1,10 @@
 package io.rently.searchservice.exceptions;
 
+import com.bugsnag.Bugsnag;
 import io.rently.searchservice.dtos.ResponseContent;
 import io.rently.searchservice.services.MailerService;
 import io.rently.searchservice.utils.Broadcaster;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,6 +18,9 @@ import javax.servlet.http.HttpServletResponse;
 @ControllerAdvice
 public class ErrorController {
 
+    @Autowired
+    private Bugsnag bugsnag;
+
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ResponseContent handleGenericException(HttpServletResponse response, Exception exception) {
@@ -24,6 +29,7 @@ public class ErrorController {
         Broadcaster.error(exception);
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         MailerService.dispatchErrorToDevs(exception);
+        bugsnag.notify(exception);
         return new ResponseContent.Builder(status).setMessage(msg).build();
     }
 
