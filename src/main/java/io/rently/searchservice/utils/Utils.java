@@ -21,7 +21,7 @@ public class Utils {
         return String.join("", keywords);
     }
 
-    public static <T> List<T> getPage(List<T> sourceList, int offset, int count) {
+    public static <T> List<T> getPaginated(List<T> sourceList, int offset, int count) {
         int fromIndex = offset * count;
         if(sourceList == null || sourceList.size() <= fromIndex){
             return Collections.emptyList();
