@@ -34,20 +34,6 @@ public class ResponseContent {
         this.summary = builder.summary;
     }
 
-    public Timestamp getTimestamp() {
-        return timestamp;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public String getMessage() { return message; }
-
-    public Object getData() {
-        return data;
-    }
-
     public static class Builder {
         private final Timestamp timestamp;
         private final int status;

@@ -4,34 +4,77 @@ import io.rently.searchservice.dtos.Listing;
 import io.rently.searchservice.dtos.ResponseContent;
 import io.rently.searchservice.dtos.Summary;
 import io.rently.searchservice.dtos.enums.QueryType;
+import io.rently.searchservice.exceptions.Errors;
 import io.rently.searchservice.services.SearchService;
+import io.rently.searchservice.utils.UriBuilder;
+import io.rently.searchservice.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.joining;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/listings")
 public class SearchController {
+
+    //      /api/v1/listings/random
+    //      /api/v1/listings/id/{id}
+    //      /api/v1/listings/search/aggregatedSearch/{query} <- redirecting to other endpoints only
+    //      /api/v1/listings/search/{query}
+    //      /api/v1/listings/search/address/{query}
+    //      /api/v1/listings/search/nearby/address/{query}
+    //      /api/v1/listings/search/nearby/geo/{query}
 
     @Autowired
     public SearchService service;
 
-    @GetMapping("/")
-    public ResponseContent handleGetRequest(
-            @RequestParam(required = false) Integer count,
-            @RequestParam(required = false) Integer offset
-    ) {
-        count = handleCount(count);
-        offset = handleOffset(offset);
+    @GetMapping({"/aggregatedSearch/{query}", "/aggregatedSearch"})
+    public RedirectView handleRedirection(@PathVariable(required = false) String query, @RequestParam Map<String, ?> parameters) {
+        String parsedQuery = (query != null ? query : "");
+        String parsedParams = parameters.entrySet().stream().map(Object::toString).collect(joining("&"));
+        parsedParams = (parsedParams.isEmpty() ? "" : "?" + parsedParams);
+        if ((parameters.containsKey("count") && parameters.containsKey("offset") && parameters.size() == 2) || parameters.isEmpty()) {
+            return new RedirectView("/api/v1/listings/search/" + parsedQuery + parsedParams);
+        } else if (parameters.containsKey("lat") && parameters.containsKey("lon")) {
+            return new RedirectView("/api/v1/listings/search/nearby/geo/" + parsedQuery + parsedParams);
+        } else if (parameters.containsKey("country") || parameters.containsKey("city") || parameters.containsKey("zip")) {
+            return new RedirectView("/api/v1/listings/search/address/" + parsedQuery + parsedParams);
+        } else if (parameters.containsKey("address")) {
+            return new RedirectView("/api/v1/listings/search/nearby/address/" + parsedQuery + parsedParams);
+        }
+        throw Errors.INVALID_REQUEST_PARAMS;
+    }
 
-        List<Listing> listings = service.fetchAny(count, offset);
+    @GetMapping("/id/{id}")
+    public ResponseContent fetchListingById(
+            @PathVariable String id
+    ) {
+        Listing listing = service.queryById(id);
+
+        return new ResponseContent
+                .Builder()
+                .setData(listing)
+                .build();
+    }
+
+    @GetMapping({"/random/", "/random"})
+    public ResponseContent fetchListingsByQuery(
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count
+    ) {
+        List<Listing> listings = service.queryRandomly(count);
 
         Summary summary = new Summary
                 .Builder(QueryType.RANDOM)
-                .setNumResults(count)
-                .setOffset(offset)
-                .setTotalResults(listings.size())
+                .setCount(count)
                 .build();
 
         return new ResponseContent
@@ -41,53 +84,108 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping("/{query}")
-    public ResponseContent handleGetRequest(
-            @PathVariable String query,
-            @RequestParam(required = false) Integer count,
-            @RequestParam(required = false) Integer offset
+    @GetMapping({"/search/{query}" , "/search"})
+    public ResponseContent fetchListingByQuery(
+            @PathVariable(required = false) String query,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
+            @RequestParam HashMap<String, Object> params
     ) {
-        count = handleCount(count);
-        offset = handleOffset(offset);
+        Page<Listing> search = service.queryListings(query, count, offset);
 
-        service.fetchByQuery(query, count, offset);
+        UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search").addPathVar(query);
+        String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
+        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
 
         Summary summary = new Summary
                 .Builder(QueryType.QUERIED)
                 .setQuery(query)
-                .setNumResults(count)
-                .setOffset(offset)
-                .setTotalResults(99999)
+                .setParams(params)
+                .setTotalResults((int) search.getTotalElements())
+                .setCount(search.getPageable().getPageSize())
+                .setOffset(search.getPageable().getPageNumber())
+                .setCurrentPage(currentPage)
+                .setNextPage(nextPage)
+                .setPrevPage(prevPage)
+                .setTotalPages(search.getTotalPages())
                 .build();
 
         return new ResponseContent
                 .Builder()
                 .setSummary(summary)
+                .setData(search.getContent())
                 .build();
     }
 
-    @GetMapping("/geocode/{query}")
-    public ResponseContent handleGetRequest(
-            @PathVariable String query,
-            @RequestParam Double lat,
-            @RequestParam Double lon,
-            @RequestParam Integer range,
-            @RequestParam(required = false) Integer count,
-            @RequestParam(required = false) Integer offset
+    @GetMapping({"/search/address/{query}", "/search/address"})
+    public ResponseContent fetchListingsByQueryAtAddress(
+            @PathVariable(required = false) String query,
+            @RequestParam(required = false) String country,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String zip,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
+            @RequestParam HashMap<String, Object> params
     ) {
-        count = handleCount(count);
-        offset = handleOffset(offset);
+        Page<Listing> search = service.queryListingsAtAddress(query, country, city, zip, count, offset);
 
-        List<Listing> listings = service.fetchByQueryAndGeocode(query, lat, lon, range, count, offset);
+        UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/address").addPathVar(query);
+        String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
+        String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
 
         Summary summary = new Summary
-                .Builder(QueryType.QUERIED_NEARBY)
+                .Builder(QueryType.QUERIED_AT_ADDRESS)
                 .setQuery(query)
-                .setNumResults(count)
+                .setParams(params)
+                .setTotalResults((int) search.getTotalElements())
+                .setCount(search.getPageable().getPageSize())
+                .setOffset(search.getPageable().getPageNumber())
+                .setCurrentPage(currentPage)
+                .setNextPage(nextPage)
+                .setPrevPage(prevPage)
+                .setTotalPages(search.getTotalPages())
+                .build();
+
+        return new ResponseContent
+                .Builder()
+                .setSummary(summary)
+                .setData(search.getContent())
+                .build();
+    }
+
+    @GetMapping({"/search/nearby/geo/{query}", "/search/nearby/geo"})
+    public ResponseContent fetchListingsByQueryNearbyGeo(
+            @PathVariable(required = false) String query,
+            @RequestParam @Min(-90) @Max(90) Double lat,
+            @RequestParam @Min(-180) @Max(180) Double lon,
+            @RequestParam @Positive Integer range,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
+            @RequestParam HashMap<String, Object> params
+    ) {
+        Page<Listing> search = service.queryListingsNearbyGeo(query, lat, lon, range, 9999, 0);
+
+        List<Listing> listings = Utils.getPaginated(search.getContent(), offset, count);
+        int totalPages = search.getContent().size() / count;
+
+        UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/geo").addPathVar(query);
+        String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
+        String nextPage = offset + 1 < totalPages ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
+
+        Summary summary = new Summary
+                .Builder(QueryType.QUERIED_NEARBY_GEO)
+                .setQuery(query)
+                .setParams(params)
+                .setTotalResults((int) search.getTotalElements())
+                .setCount(count)
                 .setOffset(offset)
-                .setTotalResults(99999)
-                .setLon(lon)
-                .setLat(lat)
+                .setCurrentPage(currentPage)
+                .setNextPage(nextPage)
+                .setPrevPage(prevPage)
+                .setTotalPages(totalPages)
                 .build();
 
         return new ResponseContent
@@ -97,30 +195,36 @@ public class SearchController {
                 .build();
     }
 
-    @GetMapping("/location/{query}")
-    public ResponseContent handleGetRequest(
-            @PathVariable String query,
-            @RequestParam String country,
-            @RequestParam String city,
-            @RequestParam String zip,
-            @RequestParam Integer range,
-            @RequestParam(required = false) Integer count,
-            @RequestParam(required = false) Integer offset
+    @GetMapping({"/search/nearby/address/{query}", "/search/nearby/address"})
+    public ResponseContent fetchListingsByQueryNearbyAddress(
+            @PathVariable(required = false) String query,
+            @RequestParam String address,
+            @RequestParam @Positive Integer range,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) Integer count,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
+            @RequestParam HashMap<String, Object> params
     ) {
-        count = handleCount(count);
-        offset = handleOffset(offset);
+        Page<Listing> search = service.queryListingsNearbyAddress(query, range, 9999, 0, address);
 
-        List<Listing> listings = service.fetchByQueryAndLocation(query, country, city, zip, range, count, offset);
+        List<Listing> listings = Utils.getPaginated(search.getContent(), offset, count);
+        int totalPages = search.getContent().size() / count;
+
+        UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/address").addPathVar(query);
+        String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
+        String nextPage = offset + 1 < totalPages ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
+        String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
 
         Summary summary = new Summary
-                .Builder(QueryType.QUERIED_NEARBY)
+                .Builder(QueryType.QUERIED_NEARBY_ADDRESS)
                 .setQuery(query)
-                .setNumResults(count)
+                .setParams(params)
+                .setTotalResults((int) search.getTotalElements())
+                .setCount(count)
                 .setOffset(offset)
-                .setTotalResults(99999)
-                .setCountry(country)
-                .setCity(city)
-                .setZip(zip)
+                .setCurrentPage(currentPage)
+                .setNextPage(nextPage)
+                .setPrevPage(prevPage)
+                .setTotalPages(totalPages)
                 .build();
 
         return new ResponseContent
@@ -128,19 +232,5 @@ public class SearchController {
                 .setSummary(summary)
                 .setData(listings)
                 .build();
-    }
-
-    private Integer handleCount(Integer count) {
-        if (count == null || count < 1 || count > 50) {
-            return 50;
-        }
-        return count;
-    }
-
-    private Integer handleOffset(Integer offset) {
-        if (offset == null || offset < 0) {
-            return 0;
-        }
-        return offset;
     }
 }

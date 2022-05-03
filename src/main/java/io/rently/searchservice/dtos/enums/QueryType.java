@@ -1,6 +1,9 @@
 package io.rently.searchservice.dtos.enums;
 
 public enum QueryType {
-    RANDOM, // random selection
-    QUERIED_NEARBY, QUERIED // match exactly
+    RANDOM,
+    QUERIED,
+    QUERIED_NEARBY_GEO,
+    QUERIED_NEARBY_ADDRESS,
+    QUERIED_AT_ADDRESS,
 }

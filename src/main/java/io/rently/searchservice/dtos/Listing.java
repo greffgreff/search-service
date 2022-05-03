@@ -21,7 +21,6 @@ public class Listing {
     private String endDate;
     private String createdAt;
     private String updatedAt;
-//    @JsonIgnore
     private Address address;
     @JsonIgnore
     private String leaser;
