@@ -19,12 +19,13 @@ public interface ListingsRepository extends MongoRepository<Listing, String> {
     @Query("{ $or: [ {'name': {$regex: ?0, $options: 'i'} }, {'desc': {$regex: ?0, $options: 'i'} } ] }")
     Page<Listing> query(String query, Pageable pageable);
 
-    @Query("{ 'address.location': { $near: {$maxDistance: ?2, $geometry: {type: 'Point', coordinates: [?0, ?1]} } } }")
+    @Query("{ 'address.location': { $near: {$maxDistance: ?2, $geometry: {type: 'Point', coordinates: [?1, ?0]} } } }")
     Page<Listing> queryAnyNearbyGeoCode(Double lat, Double lon, Integer range, Pageable pageable);
 
     @Query("{ $and: [" +
-            "{ $or: [ {'name': {$regex: ?0, $options: 'i'} }, {'desc': {$regex: ?0, $options: 'i'} } ] }, " +
-            "{ 'address.location': { $near: {$maxDistance: ?3, $geometry: {type: 'Point', coordinates: [?1, ?2]} } } }" +
+//            "  { $or: [ {'name': {$regex: 'bbq', $options: 'i'} }, {'desc': {$regex: 'bbq', $options: 'i'} }, { 'address.formattedAddress': { $regex: '', $options: 'i' } } ] }," +
+            "  { $or: [ {'name': {$regex: 'bbq', $options: 'i'} }, {'desc': {$regex: 'bbq', $options: 'i'} } ] }," +
+            "  { 'address.location': { $near: { $maxDistance: 10000, $geometry: {type: 'Point', coordinates: [7.0897, 49.0902]} } } }," +
             "] }")
     Page<Listing> queryNearbyGeoCode(String query, Double lat, Double lon, Integer range, Pageable pageable);
 
