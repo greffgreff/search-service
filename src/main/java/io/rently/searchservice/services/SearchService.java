@@ -73,11 +73,11 @@ public class SearchService {
             throw Errors.NO_ADDRESS_FOUND;
         }
         if (query != null) {
-            Broadcaster.info("Fetching listings by query and location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
+            Broadcaster.info("Fetching listings by query and nearby location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
             Broadcaster.info("Parameters: query = " + Utils.getKeywordsFromQuery(query) + ", address = " + String.join(" ", address)  + ", range = " + range);
             return repository.queryNearbyGeoCode(Utils.getKeywordsFromQuery(query), geoCords.getFirst(), geoCords.getSecond(), range, pagination);
         }
-        Broadcaster.info("Fetching listings by location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
+        Broadcaster.info("Fetching listings nearby location. Pagination: count = " + pagination.getPageSize() + ", offset = " + pagination.getPageNumber());
         Broadcaster.info("Parameters: address = " + String.join(" ", address) + ", range = " + range);
         return repository.queryAnyNearbyGeoCode(geoCords.getFirst(), geoCords.getSecond(), range, pagination);
     }
