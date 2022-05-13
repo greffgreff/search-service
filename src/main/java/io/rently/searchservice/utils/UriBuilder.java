@@ -53,7 +53,8 @@ public class UriBuilder {
             List<String> parsedParams = new ArrayList<>();
             for (Map.Entry<String, Object> param: queryParameters.entrySet()) {
                 if (param.getValue() != null) {
-                    parsedParams.add(param.getKey() + "=" + param.getValue());
+                    String encodedVal = param.getValue().toString().replace(" ", "%20");
+                    parsedParams.add(param.getKey() + "=" + encodedVal);
                 }
             }
             uri.append("?").append(String.join("&", parsedParams));
