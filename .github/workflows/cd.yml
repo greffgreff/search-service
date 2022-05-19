@@ -1,9 +1,7 @@
-name: Search Service CI CD
+name: Search Service CD
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
     branches: [ master ]
 
 jobs:
