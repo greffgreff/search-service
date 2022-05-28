@@ -45,7 +45,11 @@ This service is deployed on a Heroku instance [here](https://search-service-rent
     "offset": 0,
     "queryType": "QUERIED",
     "currentPage": "http://search-service-rently.herokuapp.com/v1/listings/search/bbq?offset=0",
-    "totalPages": 1
+    "totalPages": 1,
+    "parameters": {
+      "country": "France",
+      "city": "Remelfing"
+    }
   },
   "results": []
 }
@@ -70,7 +74,11 @@ Response fields:
   "currentPage": "http://search-service-rently.herokuapp.com/v1/listings/search/bbq?offset=2",
   "prevPage": "http://search-service-rently.herokuapp.com/v1/listings/search/bbq?offset=1",
   "nextPage": "http://search-service-rently.herokuapp.com/v1/listings/search/bbq?offset=3",
-  "totalPages": 4
+  "totalPages": 4,
+  "parameters": {
+    "country": "France",
+    "city": "Remelfing"
+  }
 }
 ```
 
@@ -86,6 +94,7 @@ Summary fields:
 | `prevPage` url string | Previous page URL, if any    |
 | `nextPage` url string | Next page URL, if any        |
 | `totalPages` int      | Maximum number of pages from given query |
+| `parameters` dict     | Key value pairs of additional query parameters, if any |
 
 ### Stripped Down Listing Object
 ```json
@@ -156,8 +165,8 @@ A `400` error is returned when no endpoint is matched.
 | **Field**         | **Description**              | **Required** |
 | ----------------- | ---------------------------- | :----------: |
 | `query` string    | Keyword(s) query             | false        |
-| `count` int       | Number of results to be returned | false    |
-| `offset` int      | Page index                   | false        |
+| `count` int          | Maximum results per page, default 20, min 1, max 100 | false        |
+| `offset` int         | Current page index, default 0, min 0 | false        |
 | `lat` double      | Valid latitudinal coordinate | false        |
 | `lon` double      | Valid longitudinal coordinate| false        |
 | `lon` double      | Valid longitudinal coordinate| false        |
@@ -258,64 +267,130 @@ Returns a [stripped down listing](#stripped-down-listing) object by id.
 
 ### `GET /api/v1/listings/search/{query}`
 
-Returns a [stripped down listing](#stripped-down-listing) object by id.
+Endpoint handling text searches based on keyword(s) alone. Returns a [response](#response-object).
 
 #### URL parameters:
 
 | **Field**         | **Description**              | **Required** |
 | ----------------- | ---------------------------- | :----------: |
-| `query` string    | Keyword(s)                   |     true     |
-| `count` int       | Number of results to be returned | false    |
-| `offset` int      | Page index                   | false        |
+| `query` string    | Keyword(s)                   |     false     |
+| `count` int          | Maximum results per page, default 20, min 1, max 100 | false        |
+| `offset` int         | Current page index, default 0, min 0 | false        |
 
 #### Return example:
 
 ```json
 {
-  "id": "216809d9-a657-40ce-b6c7-dc02bf97e793",
-  "name": "My new listing",
-  "price": "123",
-  "image": null,
-  "startDate": "1652479200",
-  "endDate": "1652479200",
-  "createdAt": "1652479718",
-  "updatedAt": "1652479718",
-  "address": {
-    "city": "Rémelfing",
-    "zip": "57200",
-    "country": "France"
-  }
+  "timestamp": "2022-05-28 15:29:44",
+  "status": 200,
+  "summary": {
+    "query": "bbq",
+    "totalResults": 2,
+    "count": 20,
+    "offset": 0,
+    "queryType": "QUERIED",
+    "currentPage": "http://localhost:8082/api/v1/listings/search/bbq?offset=0",
+    "totalPages": 1
+  },
+  "results": [
+    {
+      "id": "647aa89e-e34b-4186-83e4-48bb6739c528",
+      "name": "New BBQ for rent",
+      "price": "12",
+      "image": "https://images-service-rently.herokuapp.com/api/v1/images/09d22d79-b95a-4d84-a760-a7b2218c5cff",
+      "startDate": "1651615200",
+      "endDate": "1652306400",
+      "createdAt": "1651617084",
+      "updatedAt": "1651617084",
+      "address": {
+        "city": "Rémelfing",
+        "zip": "57200",
+        "country": "France"
+      }
+    },
+    {
+      "id": "09d22d79-b95a-4d84-a760-a7b2218c5cff",
+      "name": "Leasing BBQ",
+      "price": "123",
+      "image": "https://images-service-rently.herokuapp.com/api/v1/images/09d22d79-b95a-4d84-a760-a7b2218c5cff",
+      "startDate": "1652479200",
+      "endDate": "1652479200",
+      "createdAt": "1652540279",
+      "updatedAt": "1652540279",
+      "address": {
+        "city": "Rémelfing",
+        "zip": "57200",
+        "country": "France"
+      }
+    }
+  ]
 }
 ```
 
-### `GET /api/v1/listings/search/{query}`
+### `GET /search/address/{query}`
 
-Returns a [stripped down listing](#stripped-down-listing) object by id.
+Endpoint handling text searches based on keyword(s) and searches where `country`, `city`, or `zip` is are present individually. Returns a [response](#response-object) object of listings **specifically with** said `country`, `city`, or `zip`. At least one of those parameters must be specificed. 
 
 #### URL parameters:
 
 | **Field**         | **Description**              | **Required** |
 | ----------------- | ---------------------------- | :----------: |
-| `query` string    | Keyword(s)                   |     true     |
-| `count` int       | Number of results to be returned | false    |
-| `offset` int      | Page index                   | false        |
+| `query` string    | Keyword(s) to query          |     false    |
+| `count` int          | Maximum results per page, default 20, min 1, max 100 | false        |
+| `offset` int         | Current page index, default 0, min 0 | false        |
+| `country` int      | Country string              | false        |
+| `city` int      | City string                    | false        |
+| `zip` int      | Zip string                      | false        |
 
 #### Return example:
 
 ```json
 {
-  "id": "216809d9-a657-40ce-b6c7-dc02bf97e793",
-  "name": "My new listing",
-  "price": "123",
-  "image": null,
-  "startDate": "1652479200",
-  "endDate": "1652479200",
-  "createdAt": "1652479718",
-  "updatedAt": "1652479718",
-  "address": {
-    "city": "Rémelfing",
-    "zip": "57200",
+  "timestamp": "2022-05-28 15:32:54",
+  "status": 200,
+  "summary": {
+  "query": "bbq",
+  "totalResults": 2,
+  "count": 20,
+  "offset": 0,
+  "queryType": "QUERIED_AT_ADDRESS",
+  "currentPage": "http://localhost:8082/api/v1/listings/search/address/bbq?country=France&offset=0",
+  "totalPages": 1,
+  "parameters": {
     "country": "France"
   }
+  },
+  "results": [
+    {
+      "id": "647aa89e-e34b-4186-83e4-48bb6739c528",
+      "name": "New BBQ for rent",
+      "price": "12",
+      "image": null,
+      "startDate": "1651615200",
+      "endDate": "1652306400",
+      "createdAt": "1651617084",
+      "updatedAt": "1651617084",
+      "address": {
+        "city": "Rémelfing",
+        "zip": "57200",
+        "country": "France"
+      }
+    },
+    {
+      "id": "09d22d79-b95a-4d84-a760-a7b2218c5cff",
+      "name": "Leasing BBQ",
+      "price": "123",
+      "image": "https://images-service-rently.herokuapp.com/api/v1/images/09d22d79-b95a-4d84-a760-a7b2218c5cff",
+      "startDate": "1652479200",
+      "endDate": "1652479200",
+      "createdAt": "1652540279",
+      "updatedAt": "1652540279",
+      "address": {
+        "city": "Rémelfing",
+        "zip": "57200",
+        "country": "France"
+      }
+    }
+  ]
 }
 ```
