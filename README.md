@@ -194,11 +194,11 @@ Returns a random collection of [stripped down listing](#stripped-down-listing) o
   "timestamp": "2022-05-28 14:41:46",
   "status": 200,
   "summary": {
-  "count": 20,
-  "totalResults": 2,
-  "offset": 0,
-  "queryType": "RANDOM",
-  "totalPages": 1
+    "count": 20,
+    "totalResults": 2,
+    "offset": 0,
+    "queryType": "RANDOM",
+    "totalPages": 1
   },
   "results": [
     {
@@ -349,16 +349,16 @@ Endpoint handling text searches based on keyword(s) and searches where `country`
   "timestamp": "2022-05-28 15:32:54",
   "status": 200,
   "summary": {
-  "query": "bbq",
-  "totalResults": 2,
-  "count": 20,
-  "offset": 0,
-  "queryType": "QUERIED_AT_ADDRESS",
-  "currentPage": "http://localhost:8082/api/v1/listings/search/address/bbq?country=France&offset=0",
-  "totalPages": 1,
-  "parameters": {
-    "country": "France"
-  }
+    "query": "bbq",
+    "totalResults": 2,
+    "count": 20,
+    "offset": 0,
+    "queryType": "QUERIED_AT_ADDRESS",
+    "currentPage": "http://localhost:8082/api/v1/listings/search/address/bbq?country=France&offset=0",
+    "totalPages": 1,
+    "parameters": {
+      "country": "France"
+    }
   },
   "results": [
     {
