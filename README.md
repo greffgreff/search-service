@@ -7,7 +7,16 @@
 
 This Spring Boot project is one among other APIs used in the larger Rently project. This service handles various kinds of queries to return a collection of user-created listings saved on a MongoDB database. Only `GET` requests are possible.
 
-Using MongoDB's field indexes, queries can be made based on text and/or geolocation, and/or proximity, through URL query string. A number of endpoints allows different vairation of these searches. An additional multi-purpose endpoint redirects requests depending on query combination. 
+Using MongoDB's field indexes, queries can be made based on text and/or geolocation, and/or proximity, through URL query string. A number of endpoints allows different vairation of these searches. An additional multi-purpose endpoint redirects requests depending on query combination. Text queries are perfomed on listing titles and descriptions, while geolocation and nearby searches are performed using a `geometry` field specially formed in the [_GeoJsonPoint_](https://geojson.org/) format present in listing objects on creation with the following shape:
+
+```json
+{
+  "geometry": {
+    "type": "Point",
+    "coordinates": [125.6, 10.1]
+  }
+}
+```
 
 Time-based queries (such as availability or duration) could be implemented in future iterations.
 
@@ -122,6 +131,8 @@ Listing fields:
 Address fields:
 | **Field**            | **Description**               |
 | -------------------- | ----------------------------- |
+| `count` int       | Number of results to be returned | false    |
+| `offset` int      | Page index                   | false        |
 | `city` string        | Listing city location, if any |
 | `zip` string         | Listing zipcode, if any       |
 | `country` string     | Listing country, if any       |
@@ -131,6 +142,33 @@ Address fields:
 <br />
 
 ## Request Mappings
+
+### `GET /api/v1/listings/search/aggregatedSearch/{query}`
+
+A multi-purpose endpoint that redirect requests depending on the request's URL parameters. This endpoint is intented to make the implementation of listing  searches easier withouth dealing with multiple other endpoints.
+
+Redirection is as followed: if there are no query parameters present, then redirect to `/api/v1/listings/search/`, if there is a longitude `lon` and a latitude `lat` specified, redirect to `/api/v1/listings/search/nearby/geo/`, if there is a `country`, and/or `city`, and/or `zip` specified, redirect to `/api/v1/listings/search/address/`, if there is an `address` field specified, redirect to `/api/v1/listings/search/nearby/address/`. Any further query parameter validation is handled at the redirected endpoints (e.g. presence of `range` field when performing neaby searches, valid geo coordinates with `lat` and `lon` fields).
+
+A `400` error is returned when no endpoint is matched.
+
+#### URL parameters:
+
+| **Field**         | **Description**              | **Required** |
+| ----------------- | ---------------------------- | :----------: |
+| `query` string    | Keyword(s) query             | false        |
+| `count` int       | Number of results to be returned | false    |
+| `offset` int      | Page index                   | false        |
+| `lat` double      | Valid latitudinal coordinate | false        |
+| `lon` double      | Valid longitudinal coordinate| false        |
+| `lon` double      | Valid longitudinal coordinate| false        |
+| `country` string  | Country to query             | false        |
+| `city` string     | City to query                | false        |
+| `zip` string      | Zip to query                 | false        |
+| `address` string  | A freeform address           | false        |
+
+#### Return example:
+
+> _NA_
 
 ### `GET /api/v1/listings/random`
 
@@ -218,29 +256,66 @@ Returns a [stripped down listing](#stripped-down-listing) object by id.
 }
 ```
 
-### `GET /api/v1/listings/search/aggregatedSearch/{query}`
+### `GET /api/v1/listings/search/{query}`
 
-A multi-purpose endpoint that redirect requests depending on the request's URL parameters. This endpoint is intented to make the implementation of listing  searches easier withouth dealing with multiple other endpoints.
-
-Redirection is as followed: if there are no query parameters present, then redirect to `/api/v1/listings/search/`, if there is a longitude `lon` and a latitude `lat` specified, redirect to `/api/v1/listings/search/nearby/geo/`, if there is a `country`, and/or `city`, and/or `zip` specified, redirect to `/api/v1/listings/search/address/`, if there is an `address` field specified, redirect to `/api/v1/listings/search/nearby/address/`. Any further query parameter validation is handled at the redirected endpoints (e.g. presence of `range` field when performing neaby searches, valid geo coordinates with `lat` and `lon` fields).
-
-A `400` error is returned when no endpoint is matched.
+Returns a [stripped down listing](#stripped-down-listing) object by id.
 
 #### URL parameters:
 
 | **Field**         | **Description**              | **Required** |
 | ----------------- | ---------------------------- | :----------: |
-| `query` string    | Keyword(s) query             | false        |
+| `query` string    | Keyword(s)                   |     true     |
 | `count` int       | Number of results to be returned | false    |
 | `offset` int      | Page index                   | false        |
-| `lat` double      | Valid latitudinal coordinate | false        |
-| `lon` double      | Valid longitudinal coordinate| false        |
-| `lon` double      | Valid longitudinal coordinate| false        |
-| `country` string  | Country to query             | false        |
-| `city` string     | City to query                | false        |
-| `zip` string      | Zip to query                 | false        |
-| `address` string  | A freeform address           | false        |
 
 #### Return example:
 
-> _NA_
+```json
+{
+  "id": "216809d9-a657-40ce-b6c7-dc02bf97e793",
+  "name": "My new listing",
+  "price": "123",
+  "image": null,
+  "startDate": "1652479200",
+  "endDate": "1652479200",
+  "createdAt": "1652479718",
+  "updatedAt": "1652479718",
+  "address": {
+    "city": "Rémelfing",
+    "zip": "57200",
+    "country": "France"
+  }
+}
+```
+
+### `GET /api/v1/listings/search/{query}`
+
+Returns a [stripped down listing](#stripped-down-listing) object by id.
+
+#### URL parameters:
+
+| **Field**         | **Description**              | **Required** |
+| ----------------- | ---------------------------- | :----------: |
+| `query` string    | Keyword(s)                   |     true     |
+| `count` int       | Number of results to be returned | false    |
+| `offset` int      | Page index                   | false        |
+
+#### Return example:
+
+```json
+{
+  "id": "216809d9-a657-40ce-b6c7-dc02bf97e793",
+  "name": "My new listing",
+  "price": "123",
+  "image": null,
+  "startDate": "1652479200",
+  "endDate": "1652479200",
+  "createdAt": "1652479718",
+  "updatedAt": "1652479718",
+  "address": {
+    "city": "Rémelfing",
+    "zip": "57200",
+    "country": "France"
+  }
+}
+```
