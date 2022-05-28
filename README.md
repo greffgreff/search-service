@@ -5,7 +5,7 @@
 
 # Search Service
 
-This Spring Boot project is one among other RESTful APIs used in the larger Rently project. This service handles various kinds of queries to return a collection of user-created listings saved on a MongoDB database. 
+This Spring Boot project is one among other APIs used in the larger Rently project. This service handles various kinds of queries to return a collection of user-created listings saved on a MongoDB database. Only `GET` requests are possible.
 
 Using MongoDB's field indexes, queries can be made based on text and/or geolocation, and/or proximity, through URL query string. A number of endpoints allows different vairation of these searches. An additional multi-purpose endpoint redirects requests depending on query combination. 
 
@@ -59,14 +59,14 @@ Response fields:
 }
 ```
 
-Response fields:
+Summary fields:
 | **Field**            | **Description**               |
 | -------------------- | ----------------------------- |
 |`query` string     | Keyword(s) query, if any |
 | `totalResults` int | Total results in the database |
 | `count` int        | Maximum results per page, default 20, min 1, max 100 |
 | `offset` int       | Current page index, default 0, min 0 |
-| `queryType` queryType     | Query type as understood by the service `RANDOM`, `QUERIED`, `QUERIED_NEARBY_GEO`, `QUERIED_NEARBY_ADDRESS`, `QUERIED_AT_ADDRESS`, |
+| `queryType` queryType     | Query type as understood by the service `RANDOM`, `QUERIED`, `QUERIED_NEARBY_GEO`, `QUERIED_NEARBY_ADDRESS`, `QUERIED_AT_ADDRESS` |
 | `currentPage` url string       | Current page URL |
 | `prevPage` url string       | Previous page URL, if any |
 | `nextPage` url string       | Next page URL, if any |
@@ -91,7 +91,7 @@ Response fields:
 }
 ```
 
-Response fields:
+Listing fields:
 | **Field**            | **Description**               |
 | -------------------- | ----------------------------- |
 | `id` uuid string     | Listing id |
@@ -126,7 +126,7 @@ Address fields:
 
 ## Request Mappings
 
-### `POST /api/v1//emails/dispatch` for greetings
+### `GET /api/v1//emails/dispatch` for greetings
 
 Dispatches a greeting email to a recepient. Used when a user first opens an account on Rently.
 
