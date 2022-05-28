@@ -85,7 +85,7 @@ Response fields:
 Summary fields:
 | **Field**            | **Description**               |
 | -------------------- | ----------------------------- |
-|`query` string        | Keyword(s) query, if any      |
+| `query` string        | Keyword(s) query, if any     |
 | `totalResults` int   | Total results in the database |
 | `count` int          | Maximum results per page, default 20, min 1, max 100 |
 | `offset` int         | Current page index, default 0, min 0 |
@@ -94,7 +94,7 @@ Summary fields:
 | `prevPage` url string | Previous page URL, if any    |
 | `nextPage` url string | Next page URL, if any        |
 | `totalPages` int      | Maximum number of pages from given query |
-| `parameters` dict     | Key value pairs of additional query parameters, if any |
+| `parameters` dict     | Key value pairs of URl parameters other than `query`, if any |
 
 ### Stripped Down Listing Object
 ```json
