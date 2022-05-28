@@ -140,8 +140,6 @@ Listing fields:
 Address fields:
 | **Field**            | **Description**               |
 | -------------------- | ----------------------------- |
-| `count` int       | Number of results to be returned | false    |
-| `offset` int      | Page index                   | false        |
 | `city` string        | Listing city location, if any |
 | `zip` string         | Listing zipcode, if any       |
 | `country` string     | Listing country, if any       |
@@ -327,7 +325,7 @@ Endpoint handling text searches based on keyword(s) alone. Returns a [response](
 }
 ```
 
-### `GET /search/address/{query}`
+### `GET /api/v1/listings/search/address/{query}`
 
 Endpoint handling text searches based on keyword(s) and searches where `country`, `city`, or `zip` is are present individually. Returns a [response](#response-object) object of listings **specifically with** said `country`, `city`, or `zip`. At least one of those parameters must be specificed. 
 
@@ -392,5 +390,43 @@ Endpoint handling text searches based on keyword(s) and searches where `country`
       }
     }
   ]
+}
+```
+
+### `GET /api/v1/listings/search/nearby/address/{query}`
+
+Endpoint handling nearby queries when a freeform `address` query parameter is supplied. The endpoint also expects a `range` parameters to be present in meters. Geo coordinates are retirved from the `address` field in the URL using TomTom's [Fuzzy Search](https://developer.tomtom.com/search-api/documentation/search-service/fuzzy-search) API.
+
+#### URL parameters:
+
+| **Field**         | **Description**              | **Required** |
+| ----------------- | ---------------------------- | :----------: |
+| `query` string    | Keyword(s) to query          |     false    |
+| `count` int          | Maximum results per page, default 20, min 1, max 100 | false        |
+| `offset` int         | Current page index, default 0, min 0 | false        |
+
+#### Return example:
+
+```json
+{
+}
+```
+
+### `GET /api/v1/listings/search/nearby/geo/{query}`
+
+Endpoint handling nearby queries when a coordinates are supplied (`lat` and `lon`). The endpoint also expects a `range` parameters to be present in meters.
+
+#### URL parameters:
+
+| **Field**         | **Description**              | **Required** |
+| ----------------- | ---------------------------- | :----------: |
+| `query` string    | Keyword(s) to query          |     false    |
+| `count` int          | Maximum results per page, default 20, min 1, max 100 | false        |
+| `offset` int         | Current page index, default 0, min 0 | false        |
+
+#### Return example:
+
+```json
+{
 }
 ```
