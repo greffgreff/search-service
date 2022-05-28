@@ -9,6 +9,7 @@ import io.rently.searchservice.services.SearchService;
 import io.rently.searchservice.utils.UriBuilder;
 import io.rently.searchservice.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
@@ -33,6 +34,9 @@ public class SearchController {
     //      /api/v1/listings/search/address/{query}
     //      /api/v1/listings/search/nearby/address/{query}
     //      /api/v1/listings/search/nearby/geo/{query}
+
+    @Value("${server.baseurl}")
+    private String baseUrl;
 
     @Autowired
     public SearchService service;
@@ -93,7 +97,7 @@ public class SearchController {
     ) {
         Page<Listing> search = service.queryListings(query, count, offset);
 
-        UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search").addPathVar(query);
+        UriBuilder uriBuilder = UriBuilder.of(baseUrl + "/api/v1/listings/search").addPathVar(query);
         String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
         String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
         String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
@@ -130,7 +134,7 @@ public class SearchController {
     ) {
         Page<Listing> search = service.queryListingsAtAddress(query, country, city, zip, count, offset);
 
-        UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/address").addPathVar(query);
+        UriBuilder uriBuilder = UriBuilder.of(baseUrl + "/api/v1/listings/search/address").addPathVar(query);
         String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
         String nextPage = offset + 1 < search.getTotalPages() ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
         String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
@@ -170,7 +174,7 @@ public class SearchController {
         List<Listing> listings = Utils.getPaginated(search.getContent(), offset, count);
         int totalPages = search.getContent().size() / count;
 
-        UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/geo").addPathVar(query);
+        UriBuilder uriBuilder = UriBuilder.of(baseUrl + "/api/v1/listings/search/nearby/geo").addPathVar(query);
         String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
         String nextPage = offset + 1 < totalPages ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
         String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
@@ -209,7 +213,7 @@ public class SearchController {
         List<Listing> listings = Utils.getPaginated(search.getContent(), offset, count);
         int totalPages = search.getContent().size() / count;
 
-        UriBuilder uriBuilder = UriBuilder.of("http://localhost:8082" + "/api/v1/listings/search/nearby/address").addPathVar(query);
+        UriBuilder uriBuilder = UriBuilder.of(baseUrl + "/api/v1/listings/search/nearby/address").addPathVar(query);
         String currentPage = uriBuilder.addParams(params).addParam("offset", offset).create();
         String nextPage = offset + 1 < totalPages ? uriBuilder.addParams(params).addParam("offset", offset+1).create() : null;
         String prevPage = offset > 0 ? uriBuilder.addParams(params).addParam("offset", offset-1).create() : null;
