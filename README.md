@@ -11,7 +11,13 @@ Using MongoDB's field indexes, queries can be made based on text and/or geolocat
 
 Time-based queries (such as availability or duration) could be implemented in future iterations.
 
-Unlike other services in this project, the Search service does not need any authentication to perform searches as listings being returned as stripped down of sensitive data, including leaser id, specific street number and address if any, etc. However, CORS is still enabled so requests can only originate from the website. 
+Unlike other services in this project, the Search service does not need any authentication to perform searches as listings being returned as stripped down, providing some obfucation. Sensitive data is removed from queries, including leaser id, specific street number and address if any, etc. However, CORS is still enabled so requests can only originate from the website. 
+
+Also contrary to other service where data security this service features extensive debugging messages when performing flawed queries.
+
+This service is deployed on a Heroku instance [here](https://search-service-rently.herokuapp.com/api/v1/listings/random) and its dockerized container [here](https://hub.docker.com/repository/docker/dockeroo80/rently-search-service).
+
+> ⚠️ Please note that the service is currently deployed on a free Heroku instance and needs a few seconds to warm up on first request!
 
 ### C2 model
 ![C2 model](https://i.imgur.com/CqQbDQA.png)
@@ -39,10 +45,10 @@ Unlike other services in this project, the Search service does not need any auth
 Response fields:
 | **Field**            | **Description**               |
 | -------------------- | ----------------------------- |
-| `timestamp` timestamp     | Readable timestamp of time of query |
-| `status` int | Response status code |
-| `summary` [summary object](#summary-object)        | The query summary object as understood by the service |
-| `results` [stripped listings array](#stripped-down-listing-object) | A collection of stripped down listings. |
+| `timestamp` timestamp| Readable timestamp of time of query |
+| `status` int         | Response status code          |
+| `summary` [summary object](#summary-object) | The query summary object as understood by the service |
+| `results` [listings array](#stripped-down-listing-object) | A collection of stripped down listings. |
 
 ### Summary Object
 ```json
@@ -62,15 +68,15 @@ Response fields:
 Summary fields:
 | **Field**            | **Description**               |
 | -------------------- | ----------------------------- |
-|`query` string     | Keyword(s) query, if any |
-| `totalResults` int | Total results in the database |
-| `count` int        | Maximum results per page, default 20, min 1, max 100 |
-| `offset` int       | Current page index, default 0, min 0 |
-| `queryType` queryType     | Query type as understood by the service `RANDOM`, `QUERIED`, `QUERIED_NEARBY_GEO`, `QUERIED_NEARBY_ADDRESS`, `QUERIED_AT_ADDRESS` |
-| `currentPage` url string       | Current page URL |
-| `prevPage` url string       | Previous page URL, if any |
-| `nextPage` url string       | Next page URL, if any |
-| `totalPages` int       | Maximum number of pages from given query |
+|`query` string        | Keyword(s) query, if any      |
+| `totalResults` int   | Total results in the database |
+| `count` int          | Maximum results per page, default 20, min 1, max 100 |
+| `offset` int         | Current page index, default 0, min 0 |
+| `queryType` queryType| Query type as understood by the service `RANDOM`, `QUERIED`, `QUERIED_NEARBY_GEO`, `QUERIED_NEARBY_ADDRESS`, `QUERIED_AT_ADDRESS` |
+| `currentPage` url string | Current page URL          |
+| `prevPage` url string | Previous page URL, if any    |
+| `nextPage` url string | Next page URL, if any        |
+| `totalPages` int      | Maximum number of pages from given query |
 
 ### Stripped Down Listing Object
 ```json
@@ -94,14 +100,14 @@ Summary fields:
 Listing fields:
 | **Field**            | **Description**               |
 | -------------------- | ----------------------------- |
-| `id` uuid string     | Listing id |
-| `name` string        | Listing title |
-| `price` double       | Daily rental price |
-| `image` url string   | Listing cover image URL |
-| `startDate` timestamp   | Rental start timestamp |
-| `endDate` timestamp   | Rental end timestamp |
-| `createdAt` timestamp   | Timestamp of listing creatation |
-| `updatedAt` timestamp   | Timestamp of listing latest updates, if any |
+| `id` uuid string     | Listing id                    |
+| `name` string        | Listing title                 |
+| `price` double       | Daily rental price            |
+| `image` url string   | Listing cover image URL       |
+| `startDate` timestamp| Rental start timestamp        |
+| `endDate` timestamp  | Rental end timestamp          |
+| `createdAt` timestamp| Timestamp of listing creatation |
+| `updatedAt` timestamp| Timestamp of listing latest updates, if any |
 | `address` [address object](#address-object) | Timestamp of listing latest updates, if any |
 
 ### Address Object
@@ -116,9 +122,9 @@ Listing fields:
 Address fields:
 | **Field**            | **Description**               |
 | -------------------- | ----------------------------- |
-| `city` string     | Listing city location, if any |
-| `zip` string        | Listing zipcode, if any |
-| `country` string       | Listing country, if any |
+| `city` string        | Listing city location, if any |
+| `zip` string         | Listing zipcode, if any       |
+| `country` string     | Listing country, if any       |
 
 > The address object does not feature street name or street number
 
@@ -126,26 +132,115 @@ Address fields:
 
 ## Request Mappings
 
-### `GET /api/v1//emails/dispatch` for greetings
+### `GET /api/v1/listings/random`
 
-Dispatches a greeting email to a recepient. Used when a user first opens an account on Rently.
+Returns a random collection of [stripped down listing](#stripped-down-listing) objects.
 
 #### URL parameters:
 
 > _none_
 
-#### Request body parameters:
-
-| **Field**            | **Description**               |
-| -------------------- | ----------------------------- |
-| `type` mail type     | Mail type of value `GREETINGS`|
-| `email` email string | The recipiant's email address |
-| `name` string        | The recipiant's name          |
-
-#### Dispatched email example:
+#### Return example:
 
 ```json
 {
-  "name": "something"
+  "timestamp": "2022-05-28 14:41:46",
+  "status": 200,
+  "summary": {
+  "count": 20,
+  "totalResults": 2,
+  "offset": 0,
+  "queryType": "RANDOM",
+  "totalPages": 1
+  },
+  "results": [
+    {
+      "id": "216809d9-a657-40ce-b6c7-dc02bf97e793",
+      "name": "My new listing",
+      "price": "123",
+      "image": null,
+      "startDate": "1652479200",
+      "endDate": "1652479200",
+      "createdAt": "1652479718",
+      "updatedAt": "1652479718",
+      "address": {
+        "city": "Rémelfing",
+        "zip": "57200",
+        "country": "France"
+      }
+    },
+    {
+      "id": "48411371-22bb-4ea0-b033-5380d570d7ea",
+      "name": "My new listing",
+      "price": "123",
+      "image": null,
+      "startDate": "1652479200",
+      "endDate": "1652479200",
+      "createdAt": "1652479736",
+      "updatedAt": "1652479736",
+      "address": {
+        "city": "Rémelfing",
+        "zip": "57200",
+        "country": "France"
+      }
+    }
+  ]
 }
 ```
+
+### `GET /api/v1/listings/id/{id}`
+
+Returns a [stripped down listing](#stripped-down-listing) object by id.
+
+#### URL parameters:
+
+| **Field**         | **Description**              | **Required** |
+| ----------------- | ---------------------------- | :----------: |
+| `id` uuid string  | Valid listing id             |     true     |
+
+#### Return example:
+
+```json
+{
+  "id": "216809d9-a657-40ce-b6c7-dc02bf97e793",
+  "name": "My new listing",
+  "price": "123",
+  "image": null,
+  "startDate": "1652479200",
+  "endDate": "1652479200",
+  "createdAt": "1652479718",
+  "updatedAt": "1652479718",
+  "address": {
+    "city": "Rémelfing",
+    "zip": "57200",
+    "country": "France"
+  }
+}
+```
+
+### `GET /api/v1/listings/search/aggregatedSearch/{query}`
+
+A multi-purpose endpoint that redirect requests depending on the request's URL parameters. This endpoint is intented to make the implementation of listing  searches easier withouth dealing with multiple other endpoints.
+
+Redirection is as followed: if there are no query parameters present, then redirect to `/api/v1/listings/search/`, if there is a longitude `lon` and a latitude `lat` specified, redirect to `/api/v1/listings/search/nearby/geo/`, if there is a `country`, and/or `city`, and/or `zip` specified, redirect to `/api/v1/listings/search/address/`, if there is an `address` field specified, redirect to `/api/v1/listings/search/nearby/address/`. Any further query parameter validation is handled at the redirected endpoints (e.g. presence of `range` field when performing neaby searches, valid geo coordinates with `lat` and `lon` fields).
+
+A `400` error is returned when no endpoint is matched.
+
+#### URL parameters:
+
+| **Field**         | **Description**              | **Required** |
+| ----------------- | ---------------------------- | :----------: |
+| `query` string    | Keyword(s) query             | false        |
+| `count` int       | Number of results to be returned | false    |
+| `offset` int      | Page index                   | false        |
+| `lat` double      | Valid latitudinal coordinate | false        |
+| `lon` double      | Valid longitudinal coordinate| false        |
+| `lon` double      | Valid longitudinal coordinate| false        |
+| `country` string  | Country to query             | false        |
+| `city` string     | City to query                | false        |
+| `zip` string      | Zip to query                 | false        |
+| `address` string  | A freeform address           | false        |
+
+#### Return example:
+
+> _NA_
