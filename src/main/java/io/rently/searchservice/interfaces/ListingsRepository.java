@@ -23,22 +23,18 @@ public interface ListingsRepository extends MongoRepository<Listing, String> {
     Page<Listing> queryAnyNearbyGeoCode(Double lat, Double lon, Integer range, Pageable pageable);
 
     @Query("{ $and: [" +
-//            "  { $or: [ {'name': {$regex: 'bbq', $options: 'i'} }, {'desc': {$regex: 'bbq', $options: 'i'} }, { 'address.formattedAddress': { $regex: '', $options: 'i' } } ] }," +
-            "  { $or: [ {'name': {$regex: 'bbq', $options: 'i'} }, {'desc': {$regex: 'bbq', $options: 'i'} } ] }," +
-            "  { 'address.location': { $near: { $maxDistance: 10000, $geometry: {type: 'Point', coordinates: [7.0897, 49.0902]} } } }," +
+            "  { $or: [ {'name': {$regex: ?0, $options: 'i'} }, {'desc': {$regex: ?0, $options: 'i'} } ] }," +
+            "  { 'address.location': { $near: { $maxDistance: ?3, $geometry: {type: 'Point', coordinates: [?2, ?1]} } } }," +
             "] }")
     Page<Listing> queryNearbyGeoCode(String query, Double lat, Double lon, Integer range, Pageable pageable);
 
-    @Query("{ $or: [ {'address.country': /?1/}, {'address.city': /?2/}, {'address.zip': /?3/} ] }")
+    @Query("{ $or: [ {'address.country': {$regex: ?1, $options: 'i'} }, {'address.city': {$regex: ?2, $options: 'i'} }, {'address.zip': {$regex: ?3, $options: 'i'} } ] }")
     Page<Listing> queryAnyAtAddress(String country, String city, String zip, Pageable pageable);
 
     @Query("{ $and: [" +
             "{ $or: [ {'name': {$regex: ?0, $options: 'i'} }, {'desc': {$regex: ?0, $options: 'i'} } ] }" +
-            "{ $or: [ {'address.country': ?1}, {'address.city': ?2}, {'address.zip': ?3} ] }" +
+            "{ $or: [ {'address.country': {$regex: ?1, $options: 'i'} }, {'address.city': {$regex: ?2, $options: 'i'} }, {'address.zip': {$regex: ?3, $options: 'i'} } ] }" +
             "] }")
     Page<Listing> queryAtAddress(String query, String country, String city, String zip, Pageable pageable);
 
-    Page<Listing> findByAddressLocationNearAndNameIgnoreCaseRegex(Point point, Distance distance, String name, Pageable pageable);
-
-    Page<Listing> findByNameIgnoreCaseRegex(String name, Pageable pageable);
 }
