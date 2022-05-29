@@ -7,11 +7,11 @@
 
 This Spring Boot project is one among other APIs used in the larger Rently project. This service handles various kinds of queries to return a collection of user-created listings saved on a MongoDB database. Only `GET` requests are possible.
 
-Using MongoDB's field indexes, queries can be made based on text and/or geolocation, and/or proximity, through URL query string. A number of endpoints allows different vairation of these searches. An additional multi-purpose endpoint redirects requests depending on query combination. Text queries are perfomed on listing titles and descriptions, while geolocation and nearby searches are performed using a `geometry` field specially formed in the [_GeoJsonPoint_](https://geojson.org/) format present in listing objects on creation with the following shape:
+Using MongoDB's field indexes, queries can be made based on text and/or geolocation, and/or proximity, through URL query string. A number of endpoints allows different vairation of these searches. An additional multi-purpose endpoint redirects requests depending on query combination. Text queries are perfomed on listing titles and descriptions, while geolocation and nearby searches are performed using a `location` field specially formed in the [_GeoJsonPoint_](https://geojson.org/) format present in listing objects on creation with the following shape:
 
 ```json
 {
-  "geometry": {
+  "location": {
     "type": "Point",
     "coordinates": [125.6, 10.1]
   }
