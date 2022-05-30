@@ -397,7 +397,7 @@ Endpoint handling text searches based on keyword(s) and searches where `country`
 
 ### `GET /api/v1/listings/search/nearby/address/{query}`
 
-Endpoint handling nearby queries when an informal/imprecise freeform `address` parameter is supplied. The endpoint also expects a `range` parameters to be present in meters. 
+Endpoint handling nearby queries when a URL encoded freeform `address` parameter is supplied. The `address` field can be informal/imprecise. The endpoint also expects a `range` parameters to be present in meters. 
 
 Geo coordinates are retirved from the `address` field in the URL using TomTom's [Fuzzy Search](https://developer.tomtom.com/search-api/documentation/search-service/fuzzy-search) API. An error is returned when no geo coordinates are found. 
 
@@ -421,13 +421,12 @@ Geo coordinates are retirved from the `address` field in the URL using TomTom's 
     "totalResults": 9,
     "count": 20,
     "offset": 0,
-    "queryType": "QUERIED_NEARBY_GEO",
-    "currentPage": "http://search-service-rently.herokuapp.com/api/v1/listings/search/nearby/geo?offset=0&range=100000&lon=7&lat=49",
+    "queryType": "QUERIED_NEARBY_ADDRESS",
+    "currentPage": "http://search-service-rently.herokuapp.com/api/v1/listings/search/nearby/address?address=remelfing%20france&offset=0&range=100000",
     "totalPages": 0,
     "parameters": {
-      "lat": "49",
-      "lon": "7",
-      "range": "100000"
+    "address": "remelfing france",
+    "range": "100000"
     }
   },
   "results": [
@@ -480,10 +479,56 @@ Endpoint handling nearby queries when a coordinates are supplied (`lat` and `lon
 | `lat` double      | Latitudinal coordinate       | true         |
 | `lon` double      | Longitudinal coordinate      | true         |
 
-
 #### Return example:
 
 ```json
 {
+  "timestamp": "2022-05-30 02:48:31",
+  "status": 200,
+  "summary": {
+    "totalResults": 9,
+    "count": 20,
+    "offset": 0,
+    "queryType": "QUERIED_NEARBY_GEO",
+    "currentPage": "http://search-service-rently.herokuapp.com/api/v1/listings/search/nearby/geo?offset=0&range=100000&lon=7&lat=49",
+    "totalPages": 0,
+    "parameters": {
+      "lat": "49",
+      "lon": "7",
+      "range": "100000"
+    }
+  },
+  "results": [
+    {
+      "id": "647aa89e-e34b-4186-83e4-48bb6739c528",
+      "name": "New BBQ for rent",
+      "price": "12",
+      "image": "https://images-service-rently.herokuapp.com/api/v1/images/fb5edbed-40a1-4ccc-b3f5-b20cc6a9d44a",
+      "startDate": "1651615200",
+      "endDate": "1652306400",
+      "createdAt": "1651617084",
+      "updatedAt": "1651617084",
+      "address": {
+        "city": "Rémelfing",
+        "zip": "57200",
+        "country": "France"
+      }
+    },
+    {
+      "id": "eb693025-5e09-47a6-ada6-7ed010558d79",
+      "name": "My new listing",
+      "price": "123",
+      "image": "https://images-service-rently.herokuapp.com/api/v1/images/9e22f764-142d-46fe-a8b4-910f33dd0246",
+      "startDate": "1652392800",
+      "endDate": "1652392800",
+      "createdAt": "1652478554",
+      "updatedAt": "1652478554",
+      "address": {
+        "city": "Rémelfing",
+        "zip": "57200",
+        "country": "France"
+      }
+    }
+  ]
 }
 ```
