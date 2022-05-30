@@ -150,7 +150,7 @@ Address fields:
 
 ## Request Mappings
 
-> The data in the exemples are genuine but likely changed or may no longer be present.
+> The data in the exemples are genuine but likely changed or may no longer be present. Also, some exemples have been shortened.
 
 ### `GET /api/v1/listings/search/aggregatedSearch/{query}`
 
