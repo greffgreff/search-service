@@ -29,7 +29,7 @@ This service is deployed on a Heroku instance [here](https://search-service-rent
 > ⚠️ Please note that the service is currently deployed on a free Heroku instance and needs a few seconds to warm up on first request!
 
 ### C2 model
-![C2 model](https://i.imgur.com/KEhA9Dx.jpg)
+![C2 model](https://i.imgur.com/34Nvkd4.jpg)
 
 ## Objects
 
