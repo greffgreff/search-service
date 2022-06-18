@@ -28,6 +28,11 @@ This service is deployed on a Heroku instance [here](https://search-service-rent
 
 > ⚠️ Please note that the service is currently deployed on a free Heroku instance and needs a few seconds to warm up on first request!
 
+Please use the following command to run the docker image:
+```bash
+docker run -p 8082:8082 -e CREDENTIALS=bb63b9ccbf9ab6:GhcjiQrwHJ6tGjXz dockeroo80/rently-search-service
+```
+
 ### C2 model
 ![C2 model](https://i.imgur.com/34Nvkd4.jpg)
 
